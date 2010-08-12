@@ -35,8 +35,6 @@
          , wait_for_tables/1
         ]).
 
-%% Short-term hackery to set up node communication and brick_simple
-%% prerequisites in a separate GDSS VM.
 -export([
          %% internal
          simple_internal_setup/0
