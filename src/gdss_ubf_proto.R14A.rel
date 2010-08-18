@@ -29,6 +29,7 @@
 
   {gmt, "0.01"},
   {gdss, "0.01"},
+  {gdss_client, "0.01"},
   {gdss_ubf_proto, "0.01"}
  ]
 }.
