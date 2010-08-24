@@ -149,14 +149,14 @@ wait_for_tables(GDSSAdmin) ->
     [ gmt_loop:do_while(fun poll_table/1, {GDSSAdmin,not_ready,Tab})
       || {Tab,_,_} <- all_tables() ].
 
-poll_table({GDSSAdmin,not_ready,Tab}) ->
+poll_table({GDSSAdmin,not_ready,Tab} = T) ->
     TabCh = gmt_util:atom_ify(gmt_util:list_ify(Tab) ++ "_ch1"),
     case rpc:call(GDSSAdmin, brick_sb, get_status, [chain, TabCh]) of
         {ok, healthy} ->
             {false, ok};
         _ ->
             ok = timer:sleep(250),
-            {true, {GDSSAdmin,not_ready,Tab}}
+            {true, T}
     end.
 
 %%%----------------------------------------------------------------------
