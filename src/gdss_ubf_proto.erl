@@ -40,7 +40,7 @@
 start(_Type, StartArgs) ->
     _ = application:start(inets),
     case gdss_ubf_proto_sup:start_link(StartArgs) of
-        {ok, Pid} = Ok -> Ok;
+        {ok, _Pid} = Ok -> Ok;
         Error -> Error
     end.
 
