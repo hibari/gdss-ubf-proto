@@ -42,7 +42,6 @@ replace()         = {replace,  key(), ts(), val(), exp_time(), flags_list()};
 set()             = {set,      key(), ts(), val(), exp_time(), flags_list()};
 
 %% Types for primitive types
-
 do_op_flag()      = %% Section: Sent by client, should not be sent by server.
                     %%
                     {testset, ts()} |
@@ -54,12 +53,13 @@ do_op_flag()      = %% Section: Sent by client, should not be sent by server.
                     must_exist |
                     must_not_exist |
                     value_in_ram |
-                    %% Section: Sent by server, should not be sent by client.
+                    %% Section: Sent by server, should not be sent by
+                    %% client.
                     %%
                     {val_len, integer()} |
                     %% Section: Flags that pass through brick and are
-                    %%          stored with key, same as an Erlang
-                    %%          property list.
+                    %% stored with key, same as an Erlang property
+                    %% list.
                     %%
                     {term(), term()} |
                     atom();
@@ -90,17 +90,19 @@ do1_res_ok()      = ok |
                     {ok, {[{key(), ts()}], boolean()}} |
                     {ok, {[{key(), ts(), flags_list()}], boolean()}} |
                     {ok, {[{key(), ts(), val(), time_t(), flags_list()}], boolean()}} |
-                    %% The 'txn' atom is present only because of QuickCheck:
-                    %% a dumb generator may put 'txn' anywhere in the
-                    %% do_op_list().  Real users must take greater care when
-                    %% sending 'txn' (see above), and real users won't see
-                    %% 'txn' in their results.
+                    %% The 'txn' atom is present only because of
+                    %% QuickCheck: a dumb generator may put 'txn'
+                    %% anywhere in the do_op_list().  Real users must
+                    %% take greater care when sending 'txn' (see
+                    %% above), and real users won't see 'txn' in their
+                    %% results.
                     txn;
 do1_res_fail()    = {key_exists, ts()} |
                     key_not_exist |
                     {ts_error, ts()} |
                     invalid_flag_present |
-                    %% The responsible brick is unavailable/crashed/whatever.
+                    %% The responsible brick is
+                    %% unavailable/crashed/whatever.
                     brick_not_available;
 do_res_fail()     = {txn_fail, [{integer(), do1_res_fail()}]};
 
@@ -109,11 +111,11 @@ do_res()          = [do1_res_ok()|do1_res_fail()] | do_res_fail();
 
 %% Simplified, single-key API ops
 %%
-%% N.B.: To simplify the contract, we say that do1_res_ok() is the return
-%%       type for each simplified API operation.  Technically speaking,
-%%       do1_res_ok() is a superset of allowed return values.
-%%       For example, 'ok' is not really a valid return value for a
-%%       get_many_req() request.
+%% N.B.: To simplify the contract, we say that do1_res_ok() is the
+%% return type for each simplified API operation.  Technically
+%% speaking, do1_res_ok() is a superset of allowed return values.  For
+%% example, 'ok' is not really a valid return value for a
+%% get_many_req() request.
 
 add_req()         = {add, table(),
                      key(), val(), exp_time(), flags_list(), timeout()};
@@ -139,13 +141,8 @@ brick_status_req() = {brick_status, atom(), atom(), timeout()};
 brick_status_res() = {ok, term()} | noproc;
 
 %% Misc, in alphabetical order
-
 boolean()         = true | false;
 do_flags_list()   = [] | [sync_override];
-%% A.k.a. an Erlang "property list", a.k.a. "proplist"
-%% prop_list()       = [property()];
-%% property()        = atom() | {atom(), term()};
-
 table()           = atom(nonempty,nonundefined);
 %% time_t = UNIX time_t value, 0..2^31
 time_t()          = integer();
@@ -161,23 +158,23 @@ info()            = info.
 
 
 +ANYSTATE
-  %% General API
-  do_req()        => do_res();
+%% General API
+do_req()        => do_res();
 
-  %% Simplified API
-  add_req()       => add_res();
-  delete_req()    => delete_res();
-  get_many_req()  => get_many_res();
-  get_req()       => get_res();
-  replace_req()   => replace_res();
-  set_req()       => set_res();
+%% Simplified API
+add_req()       => add_res();
+delete_req()    => delete_res();
+get_many_req()  => get_many_res();
+get_req()       => get_res();
+replace_req()   => replace_res();
+set_req()       => set_res();
 
-  %% Status API
-  brick_status_req() => brick_status_res();
+%% Status API
+brick_status_req() => brick_status_res();
 
-  %% keepalive
-  keepalive_req() => keepalive_res();
+%% keepalive
+keepalive_req() => keepalive_res();
 
-  info()          => string();
-  description()   => string();
-  contract()      => term().
+info()          => string();
+description()   => string();
+contract()      => term().

@@ -59,20 +59,20 @@ handlerRpc({do, Table, Ops, Flags, Timeout}) ->
     brick_simple:do(Table, Ops, Flags, Timeout);
 handlerRpc({add, Table, Key, Val, ExpTime, Flags, Timeout}) ->
     brick_simple:add(Table, Key, Val, ExpTime, Flags, Timeout);
+handlerRpc({replace, Table, Key, Val, ExpTime, Flags, Timeout}) ->
+    brick_simple:replace(Table, Key, Val, ExpTime, Flags, Timeout);
+handlerRpc({set, Table, Key, Val, ExpTime, Flags, Timeout}) ->
+    brick_simple:set(Table, Key, Val, ExpTime, Flags, Timeout);
 handlerRpc({delete, Table, Key, Flags, Timeout}) ->
     brick_simple:delete(Table, Key, Flags, Timeout);
 handlerRpc({get, Table, Key, Flags, Timeout}) ->
     brick_simple:get(Table, Key, Flags, Timeout);
 handlerRpc({get_many, Table, Key, Num, Flags, Timeout}) ->
     brick_simple:get_many(Table, Key, Num, Flags, Timeout);
-handlerRpc({replace, Table, Key, Val, ExpTime, Flags, Timeout}) ->
-    brick_simple:replace(Table, Key, Val, ExpTime, Flags, Timeout);
-handlerRpc({set, Table, Key, Val, ExpTime, Flags, Timeout}) ->
-    brick_simple:set(Table, Key, Val, ExpTime, Flags, Timeout);
 handlerRpc({brick_status, Brick, Node, Timeout}) ->
     try
         {ok, Status} = brick_server:status(Brick, Node, Timeout),
-        file:write_file("/tmp/iiii", term_to_binary(filter_bad_terms(lists:keydelete(hash, 1, Status)))),
+        %% DEBUG file:write_file("/tmp/iiii", term_to_binary(filter_bad_terms(lists:keydelete(hash, 1, Status)))),
         {ok, filter_bad_terms(lists:keydelete(hash, 1, Status))}
     catch _X:_Y ->
             noproc
@@ -102,4 +102,3 @@ my_map(_F, []) ->
     [];
 my_map(F, ImproperList) ->
     F(ImproperList).
-
