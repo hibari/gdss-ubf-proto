@@ -19,13 +19,13 @@
 
 {release,
  {"gdss-ubf-proto", "0.01"},
- {erts, "5.8"},
+ {erts, "5.8.1"},
  [
-  {kernel, "2.14"},
-  {stdlib, "1.17"},
+  {kernel, "2.14.1"},
+  {stdlib, "1.17.1"},
   {sasl, "2.1.9.2"},
-  {inets, "5.4"},
-  {crypto, "2.0"},
+  {inets, "5.5"},
+  {crypto, "2.0.1"},
 
   {gmt, "0.01"},
   {gdss, "0.01"},
