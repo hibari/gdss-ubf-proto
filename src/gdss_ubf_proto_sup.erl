@@ -54,20 +54,24 @@ init(_Args) ->
     %% Child_spec = [Name, {M, F, A},
     %%               Restart, Shutdown_time, Type, Modules_used]
 
+    Plugins = [ubf_gdss_plugin, ubf_gdss_stub_plugin],
+
     CEBF = case gmt_config_svr:get_config_value_i(gdss_ebf_tcp_port, 7580) of
                {ok, 0} ->
                    [];
                {ok, EBFPort} ->
                    {ok,EBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_ebf_maxconn, 10000),
                    {ok,EBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_ebf_timeout, 60),
+                   {ok,EBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_ebf_process_options, []),
+                   EBFProcessOptions = gmt_util:proplists_int_copy([], EBFPOTerm, [fullsweep_after, min_heap_size]),
 
                    EBFOptions =
                        [{serverhello, "gdss_meta_server"}, {statelessrpc,true},
                         {proto,ebf}, {maxconn,EBFMaxConn},
-                        {idletimer,EBFIdleTimer}, {registeredname, gdss_ebf},
-                        {tlog_module, undefined}],
+                        {idletimer,EBFIdleTimer}, {registeredname,gdss_ebf},
+                        {tlog_module,undefined}, {process_options,EBFProcessOptions}],
                    EBFServer =
-                       {ebf_server, {ubf_server, start_link, [gdss_meta, [ubf_gdss_plugin], gmt_util:node_localid_port(EBFPort), EBFOptions]},
+                       {ebf_server, {ubf_server, start_link, [gdss_meta, Plugins, gmt_util:node_localid_port(EBFPort), EBFOptions]},
                         permanent, 2000, worker, [ebf_server]},
 
                    [EBFServer]
@@ -79,14 +83,16 @@ init(_Args) ->
                {ok, UBFPort} ->
                    {ok,UBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_ubf_maxconn, 10000),
                    {ok,UBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_ubf_timeout, 60),
+                   {ok,UBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_ubf_process_options, []),
+                   UBFProcessOptions = gmt_util:proplists_int_copy([], UBFPOTerm, [fullsweep_after, min_heap_size]),
 
                    UBFOptions =
                        [{serverhello, "gdss_meta_server"}, {statelessrpc,true},
                         {proto,ubf}, {maxconn,UBFMaxConn},
-                        {idletimer,UBFIdleTimer}, {registeredname, gdss_ubf},
-                        {tlog_module, undefined}],
+                        {idletimer,UBFIdleTimer}, {registeredname,gdss_ubf},
+                        {tlog_module,undefined}, {process_options,UBFProcessOptions}],
                    UBFServer =
-                       {ubf_server, {ubf_server, start_link, [gdss_meta1, [ubf_gdss_plugin], gmt_util:node_localid_port(UBFPort), UBFOptions]},
+                       {ubf_server, {ubf_server, start_link, [gdss_meta1, Plugins, gmt_util:node_localid_port(UBFPort), UBFOptions]},
                         permanent, 2000, worker, [ubf_server]},
 
                    [UBFServer]
@@ -98,14 +104,16 @@ init(_Args) ->
                {ok, JSFPort} ->
                    {ok,JSFMaxConn} = gmt_config_svr:get_config_value_i(gdss_jsf_maxconn, 10000),
                    {ok,JSFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_jsf_timeout, 60),
+                   {ok,JSFPOTerm} = gmt_config_svr:get_config_value_term(gdss_jsf_process_options, []),
+                   JSFProcessOptions = gmt_util:proplists_int_copy([], JSFPOTerm, [fullsweep_after, min_heap_size]),
 
                    JSFOptions =
                        [{serverhello, "gdss_meta_server"}, {statelessrpc,true},
                         {proto,jsf}, {maxconn,JSFMaxConn},
-                        {idletimer,JSFIdleTimer}, {registeredname, gdss_jsf},
-                        {tlog_module, undefined}],
+                        {idletimer,JSFIdleTimer}, {registeredname,gdss_jsf},
+                        {tlog_module,undefined}, {process_options,JSFProcessOptions}],
                    JSFServer =
-                       {jsf_server, {ubf_server, start_link, [gdss_meta2, [ubf_gdss_plugin], gmt_util:node_localid_port(JSFPort), JSFOptions]},
+                       {jsf_server, {ubf_server, start_link, [gdss_meta2, Plugins, gmt_util:node_localid_port(JSFPort), JSFOptions]},
                         permanent, 2000, worker, [jsf_server]},
 
                    [JSFServer]

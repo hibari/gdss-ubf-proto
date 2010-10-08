@@ -24,19 +24,19 @@ MODULES1 = \
 	gdss_ubf_proto \
 	gdss_ubf_proto_sup \
 	ubf_gdss_plugin \
-	ubf_gdss_plugin_v01
+	ubf_gdss_stub_plugin
 
 EUNITTESTS = \
-	ubf_gdss_plugin_test
+	ubf_gdss_plugin_test \
+	ubf_gdss_stub_plugin_test
 
 DISABLEDQUICKTESTS = \
 	go_gdss_eqc \
-	ubf_gdss_plugin_eqc \
-	ubf_gdss_plugin_v01_eqc
+	ubf_gdss_plugin_eqc
 
 PLUGINS = \
 	ubf_gdss_plugin \
-	ubf_gdss_plugin_v01
+	ubf_gdss_stub_plugin
 
 # include erl make
 include $(shell cat ../.depends-gmt-bom)/make/erl_make.mk
@@ -55,6 +55,7 @@ check: all
 	$(RUNAPP1) -noshell -noinput \
 		-s api_gdss_ubf_proto_init simple_internal_setup \
 		-s ubf_gdss_plugin_test do_eunit \
+		-s ubf_gdss_stub_plugin_test do_eunit \
 		-s erlang halt \
 		| tee -a check.log
 

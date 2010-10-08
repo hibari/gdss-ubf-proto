@@ -45,19 +45,19 @@ all_tests_(Setup,Teardown) ->
     {setup,
      Setup,
      Teardown,
-     (all_actual_tests_(ebf_server,erl))(not_used) ++
-         (all_actual_tests_(ebf_server,tcp))(not_used) ++
-         (all_actual_tests_(ubf_server,erl))(not_used) ++
-         (all_actual_tests_(ubf_server,tcp))(not_used)
-         %% BUG 28215 (all_actual_tests_(jsf_server,erl))(not_used) ++
-         %% BUG 28215 (all_actual_tests_(jsf_server,tcp))(not_used)
+     (all_actual_tests_("gdss",ebf_server,erl))(not_used)
+     ++ (all_actual_tests_("gdss",ebf_server,tcp))(not_used)
+     ++ (all_actual_tests_("gdss",ubf_server,erl))(not_used)
+     ++ (all_actual_tests_("gdss",ubf_server,tcp))(not_used)
+     %% ++ (all_actual_tests_("gdss",jsf_server,erl))(not_used)
+     %% ++ (all_actual_tests_("gdss",jsf_server,tcp))(not_used)
     }.
 
-all_actual_tests_(ServerId,Proto) ->
+all_actual_tests_(Service,ServerId,Proto) ->
     fun (_) ->
-            [?_test(test_get_add_set(ServerId,Proto))
-             , ?_test(test_simplified(ServerId,Proto))
-             , ?_test(test_status(ServerId,Proto))
+            [?_test(test_get_add_set(Service,ServerId,Proto))
+             , ?_test(test_simplified(Service,ServerId,Proto))
+             , ?_test(test_status(Service,ServerId,Proto))
             ]
     end.
 
@@ -71,24 +71,24 @@ test_setup() ->
 test_teardown(_X) ->
     ok.
 
-client_connect(ServerId,Proto) ->
-    client_connect(ServerId,Proto,infinity).
+client_connect(Service,ServerId,Proto) ->
+    client_connect(Service,ServerId,Proto,infinity).
 
-client_connect(ServerId,tcp,Timeout) ->
+client_connect(Service,ServerId,tcp,Timeout) ->
     {Port,Proto} =
         if ServerId =:= ebf_server -> {7580, ebf};
            ServerId =:= ubf_server -> {7581, ubf};
            ServerId =:= jsf_server -> {7582, jsf}
         end,
     {ok,Pid,?S("gdss_meta_server")} = ubf_client:connect("localhost",Port,[{proto,Proto}],Timeout),
-    {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S("gdss"),[]},Timeout),
+    {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S(Service),[]},Timeout),
     Pid;
-client_connect(ServerId,erl,Timeout) ->
+client_connect(Service,ServerId,erl,Timeout) ->
     Plugins = [ubf_gdss_plugin],
     [Server] = [Child||{Id,Child,_Type,_Module} <- supervisor:which_children(gdss_ubf_proto_sup), Id==ServerId],
     Options = [{serverhello,"gdss_meta_server"},{statelessrpc,true},{plugins,Plugins},{server,Server}],
     {ok,Pid,?S("gdss_meta_server")} = ubf_client:connect(Plugins, Server, Options, Timeout),
-    {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S("gdss"),[]},Timeout),
+    {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S(Service),[]},Timeout),
     Pid.
 
 client_rpc(Pid,Args) ->
@@ -107,10 +107,10 @@ client_stop(Pid) ->
     ubf_client:stop(Pid).
 
 
-test_get_add_set(ServerId,Proto) ->
+test_get_add_set(Service,ServerId,Proto) ->
     api_gdss_ubf_proto_init:simple_soft_reset(),
 
-    Pid = client_connect(ServerId,Proto),
+    Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
     %% get - ng
@@ -131,10 +131,10 @@ test_get_add_set(ServerId,Proto) ->
     ok = client_stop(Pid),
     ok.
 
-test_simplified(ServerId,Proto) ->
+test_simplified(Service,ServerId,Proto) ->
     api_gdss_ubf_proto_init:simple_soft_reset(),
 
-    Pid = client_connect(ServerId,Proto),
+    Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
     %% get - ng
@@ -170,10 +170,10 @@ test_simplified(ServerId,Proto) ->
     ok = client_stop(Pid),
     ok.
 
-test_status(ServerId,Proto) ->
+test_status(Service,ServerId,Proto) ->
     api_gdss_ubf_proto_init:simple_soft_reset(),
 
-    Pid = client_connect(ServerId,Proto),
+    Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
     {ok, _} = client_rpc(Pid, {brick_status, a_ch1_b1, node(), 1000}),
