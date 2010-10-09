@@ -81,7 +81,7 @@ client_connect(Service,ServerId,tcp,Timeout) ->
         if ServerId =:= ebf_server -> {7580, ebf};
            ServerId =:= ubf_server -> {7581, ubf};
            ServerId =:= jsf_server -> {7582, jsf};
-           ServerId =:= tbf_server -> {7583, tbf}
+           ServerId =:= tbf_server -> {7599, tbf}
         end,
     {ok,Pid,?S("gdss_meta_server")} = ubf_client:connect("localhost",Port,[{proto,Proto}],Timeout),
     {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S(Service),[]},Timeout),

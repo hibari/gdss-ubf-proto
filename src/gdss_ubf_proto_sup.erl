@@ -119,7 +119,7 @@ init(_Args) ->
                    [JSFServer]
            end,
 
-    CTBF = case gmt_config_svr:get_config_value_i(gdss_tbf_tcp_port, 7583) of
+    CTBF = case gmt_config_svr:get_config_value_i(gdss_tbf_tcp_port, 7599) of
                {ok, 0} ->
                    [];
                {ok, TBFPort} ->
