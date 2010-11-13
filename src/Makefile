@@ -14,7 +14,7 @@
 ### limitations under the License.
 ###
 ### File    : Makefile
-### Purpose : 
+### Purpose :
 ###----------------------------------------------------------------------
 
 APPNAME1 = gdss_ubf_proto
@@ -24,19 +24,20 @@ MODULES1 = \
 	gdss_ubf_proto \
 	gdss_ubf_proto_sup \
 	ubf_gdss_plugin \
-	ubf_gdss_stub_plugin
+	ubf_gdss_stub_plugin \
+	tbf_gdss_plugin
 
 EUNITTESTS = \
 	ubf_gdss_plugin_test \
 	ubf_gdss_stub_plugin_test
 
 DISABLEDQUICKTESTS = \
-	go_gdss_eqc \
 	ubf_gdss_plugin_eqc
 
 PLUGINS = \
 	ubf_gdss_plugin \
-	ubf_gdss_stub_plugin
+	ubf_gdss_stub_plugin \
+	tbf_gdss_plugin
 
 # include erl make
 include $(shell cat ../.depends-gmt-bom)/make/erl_make.mk

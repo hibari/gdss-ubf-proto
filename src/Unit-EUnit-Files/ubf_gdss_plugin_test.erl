@@ -51,8 +51,6 @@ all_tests_(Setup,Teardown) ->
      ++ (all_actual_tests_("gdss",ubf_server,tcp))(not_used)
      %% ++ (all_actual_tests_("gdss",jsf_server,erl))(not_used)
      %% ++ (all_actual_tests_("gdss",jsf_server,tcp))(not_used)
-     ++ (all_actual_tests_("gdss",tbf_server,erl))(not_used)
-     ++ (all_actual_tests_("gdss",tbf_server,tcp))(not_used)
     }.
 
 all_actual_tests_(Service,ServerId,Proto) ->
@@ -80,8 +78,7 @@ client_connect(Service,ServerId,tcp,Timeout) ->
     {Port,Proto} =
         if ServerId =:= ebf_server -> {7580, ebf};
            ServerId =:= ubf_server -> {7581, ubf};
-           ServerId =:= jsf_server -> {7582, jsf};
-           ServerId =:= tbf_server -> {7599, tbf}
+           ServerId =:= jsf_server -> {7582, jsf}
         end,
     {ok,Pid,?S("gdss_meta_server")} = ubf_client:connect("localhost",Port,[{proto,Proto}],Timeout),
     {reply,{ok,ok},none} = ubf_client:rpc(Pid,{startSession,?S(Service),[]},Timeout),

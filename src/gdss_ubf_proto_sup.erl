@@ -119,26 +119,29 @@ init(_Args) ->
                    [JSFServer]
            end,
 
-    CTBF = case gmt_config_svr:get_config_value_i(gdss_tbf_tcp_port, 7599) of
-               {ok, 0} ->
-                   [];
-               {ok, TBFPort} ->
-                   {ok,TBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_tbf_maxconn, 10000),
-                   {ok,TBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_tbf_timeout, 60),
-                   {ok,TBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_tbf_process_options, []),
-                   TBFProcessOptions = gmt_util:proplists_int_copy([], TBFPOTerm, [fullsweep_after, min_heap_size]),
+    %% NOTE: This server implements native Thrift Binary Format.
+    %% There is no need to have UBF over TBF listener except for test
+    %% purposes so it has been removed.
+    CTBF = case gmt_config_svr:get_config_value_i(gdss_tbf_tcp_port, 7600) of
+                {ok, 0} ->
+                    [];
+                {ok, TBFPort} ->
+                    {ok,TBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_tbf_maxconn, 10000),
+                    {ok,TBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_tbf_timeout, 60),
+                    {ok,TBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_tbf_process_options, []),
+                    TBFProcessOptions = gmt_util:proplists_int_copy([], TBFPOTerm, [fullsweep_after, min_heap_size]),
 
-                   TBFOptions =
-                       [{serverhello, "gdss_meta_server"}, {statelessrpc,true},
-                        {proto,tbf}, {maxconn,TBFMaxConn},
-                        {idletimer,TBFIdleTimer}, {registeredname,gdss_tbf},
-                        {tlog_module,undefined}, {process_options,TBFProcessOptions}],
-                   TBFServer =
-                       {tbf_server, {ubf_server, start_link, [gdss_meta3, Plugins, gmt_util:node_localid_port(TBFPort), TBFOptions]},
-                        permanent, 2000, worker, [tbf_server]},
+                    TBFOptions =
+                        [{serverhello, undefined}, {startplugin, tbf_gdss_plugin}, {statelessrpc,true},
+                         {proto,tbf}, {maxconn,TBFMaxConn},
+                         {idletimer,TBFIdleTimer}, {registeredname,gdss_tbf},
+                         {tlog_module,undefined}, {process_options,TBFProcessOptions}],
+                    TBFServer =
+                        {tbf_server, {ubf_server, start_link, [gdss_meta3, [tbf_gdss_plugin], gmt_util:node_localid_port(TBFPort), TBFOptions]},
+                         permanent, 2000, worker, [tbf_server]},
 
-                   [TBFServer]
-           end,
+                    [TBFServer]
+            end,
 
     {ok, {{one_for_one, 2, 60}, CEBF ++ CUBF ++ CJSF ++ CTBF}}.
 
