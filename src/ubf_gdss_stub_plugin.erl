@@ -26,7 +26,7 @@
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
--add_contract("ubf_gdss_stub_plugin").
+-add_contract("./src/ubf_gdss_stub_plugin").
 -add_types(ubf_gdss_plugin).
 
 info() ->

@@ -63,10 +63,31 @@ all_actual_tests_(Service,ServerId,Proto) ->
 %%% Internal
 %%%----------------------------------------------------------------------
 
+-define(APPS, [gdss_ubf_proto, gdss_admin, gdss_client, gdss, gmt, inets, crypto, sasl]).
+
 test_setup() ->
+    %% @TODO - boilerplate start
+    os:cmd("rm -rf Schema.local hlog.* root"),
+    os:cmd("ln -s ../../gdss-admin/priv/root ."),
+    os:cmd("epmd -kill; sleep 1"),
+    os:cmd("epmd -daemon; sleep 1"),
+    {ok, _} = net_kernel:start(['eunit@localhost', shortnames]),
+    ok = application:set_env(gmt, central_config, "../priv/central.conf"),
+    [ application:stop(A) || A <- ?APPS ],
+    [ ok=application:start(A) || A <- lists:reverse(?APPS) ],
+    random:seed(erlang:now()),
+    gmt_config_svr:set_config_value(brick_max_log_size_mb,"1"),
+    %% @TODO - boilerplate stop
+    api_gdss_ubf_proto_init:simple_internal_setup(),
     api_gdss_ubf_proto_init:simple_hard_reset().
 
 test_teardown(_X) ->
+    api_gdss_ubf_proto_init:simple_internal_teardown(),
+    %% @TODO - boilerplate start
+    [ application:stop(A) || A <- ?APPS ],
+    ok = application:unset_env(gmt, central_config),
+    ok = net_kernel:stop(),
+    %% @TODO - boilerplate stop
     ok.
 
 client_connect(Service,ServerId,Proto) ->

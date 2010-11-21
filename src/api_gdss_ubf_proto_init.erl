@@ -107,15 +107,21 @@ create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
 
 
 simple_internal_setup() ->
+    application:stop(gdss_admin),
+    application:stop(gdss_client),
     application:stop(gdss),
     os:cmd("rm -fr Schema.local hlog.*"),
     application:start(gdss),
+    application:start(gdss_client),
+    application:start(gdss_admin),
     brick_admin:bootstrap_local([], true, $/, 3, 1, 1, []),
     create_tables(),
     wait_for_tables(),
     ok.
 
 simple_internal_teardown() ->
+    application:stop(gdss_admin),
+    application:stop(gdss_client),
     application:stop(gdss),
     os:cmd("rm -fr Schema.local hlog.*"),
     ok.

@@ -38,7 +38,7 @@
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
--add_contract("tbf_gdss_plugin").
+-add_contract("./src/tbf_gdss_plugin").
 
 debug(Format, Data) ->
     error_logger:info_msg(Format, Data).

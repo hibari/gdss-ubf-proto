@@ -1,3 +1,5 @@
+%%% -*- mode: erlang -*-
+
 %%%----------------------------------------------------------------------
 %%% Copyright (c) 2008-2010 Gemini Mobile Technologies, Inc.  All rights reserved.
 %%%
@@ -13,23 +15,23 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%
-%%% File    : gdss_ubf_proto.R13B04.rel
-%%% Purpose : gdss ubf proto application release file
+%%% File    : gdss_ubf_proto.app
+%%% Purpose : gdss ubf proto application
 %%%----------------------------------------------------------------------
 
-{release,
- {"gdss-ubf-proto", "0.01"},
- {erts, "5.7.4"},
+{application, gdss_ubf_proto,
  [
-  {kernel, "2.13.5"},
-  {stdlib, "1.16.5"},
-  {sasl, "2.1.9"},
-  {inets, "5.3"},
-  {crypto, "1.6.4"},
-
-  {gmt, "0.01"},
-  {gdss, "0.01"},
-  {gdss_client, "0.01"},
-  {gdss_ubf_proto, "0.01"}
+  {description, "Gemini Distributed Storage Service UBF Protocol Server"},
+  {vsn, "0.01"},
+  {registered, []},
+  {applications, [kernel, stdlib, sasl, gdss]},
+  {mod, {gdss_ubf_proto, []}},
+  {modules, [api_gdss_ubf_proto_init
+             , gdss_ubf_proto
+             , gdss_ubf_proto_sup
+             , tbf_gdss_plugin
+             , ubf_gdss_plugin
+             , ubf_gdss_stub_plugin
+            ]}
  ]
 }.
