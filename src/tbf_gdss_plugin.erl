@@ -33,6 +33,7 @@
 -define(hibari_SERVICE_NOT_AVAIL, 3).
 -define(hibari_NOT_IMPLEMENTED, 4).
 -define(hibari_TIME_OUT, 5).
+-define(hibari_TS_ERROR, 6).
 -define(hibari_KEY_EXISTS, 101).
 -define(hibari_KEY_NOT_EXISTS, 102).
 
@@ -119,6 +120,11 @@ handlerRpc({message,<<"Replace">>, 'T-CALL', SeqId, Params}) ->
             Exception = make_exception(?hibari_KEY_NOT_EXISTS, "Key Not Exist"),
             {message, <<"Replace">>, 'T-REPLY', SeqId, Exception};
 
+        ts_error ->
+            % input data is older than storage
+            Exception = make_exception(?hibari_TS_ERROR, "TimeStamp Error"),
+            {message, <<"Replace">>, 'T-REPLY', SeqId, Exception};
+
         brick_not_available ->
             Exception = make_exception(?hibari_SERVICE_NOT_AVAIL, "Brick Not Available"),
             {message, <<"Replace">>, 'T-REPLY', SeqId, Exception};
@@ -149,6 +155,11 @@ handlerRpc({message,<<"Set">>, 'T-CALL', SeqId, Params}) ->
         brick_not_available ->
             Exception = make_exception(?hibari_SERVICE_NOT_AVAIL, "Brick Not Available"),
             {message, <<"Set">>, 'T-REPLY', SeqId, Exception};
+
+        ts_error ->
+            % input data is older than storage
+            Exception = make_exception(?hibari_TS_ERROR, "TimeStamp Error"),
+            {message, <<"Replace">>, 'T-REPLY', SeqId, Exception};
 
         unknown_args ->
             Exception = make_exception(?hibari_UNKNOWN_ARGS, "Bad input params"),
@@ -301,6 +312,9 @@ replace(Table, Key, Value) ->
         timeout ->
             timeout;
 
+        {ts_error, _} ->
+            ts_error;
+
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:replace [~p]~n", [brick_not_available]),
             brick_not_available;
@@ -326,9 +340,7 @@ set(Table, Key, Value) ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {ts_error, _} ->
-            %% Honest race with another put.
-            debug("brick_simple:set [~p] returns as ok~n", [ts_error]),
-            {ok, timer:now_diff(erlang:now(), StartTime)};
+            ts_error;
 
         timeout ->
             timeout;

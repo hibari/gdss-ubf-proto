@@ -18,7 +18,7 @@
 # Purpose : simplified Hibari "thrift" API for ntbf gdss plugin contract
 #----------------------------------------------------------------------
 
-namespace java com.hibari.rpc
+namespace java com.hibari.thrift
 
 enum ErrorCode {
   UNKNOWN           = 1,
@@ -26,6 +26,7 @@ enum ErrorCode {
   SERVICE_NOT_AVAIL = 3,
   NOT_IMPLEMENTED   = 4,
   TIME_OUT          = 5,
+  TS_ERROR          = 6,
   KEY_EXISTS        = 101,
   KEY_NOT_EXISTS    = 102,
 }
