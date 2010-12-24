@@ -128,7 +128,7 @@ simple_internal_teardown() ->
 
 simple_soft_reset() ->
     [ ok = simple_soft_reset(Tab) || {Tab,_,_} <- all_tables() ],
-    ok = gmt_config_svr:reload_config(),
+    {ok, _} = gmt_otp:reload_config(),
     ok.
 
 simple_soft_reset(Tab) ->

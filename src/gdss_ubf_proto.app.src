@@ -32,6 +32,22 @@
              , tbf_gdss_plugin
              , ubf_gdss_plugin
              , ubf_gdss_stub_plugin
-            ]}
- ]
-}.
+            ]},
+  {env, [{gdss_ebf_maxconn, 10000}
+         , {gdss_ebf_process_options, []}
+         , {gdss_ebf_tcp_port, 7580}
+         , {gdss_ebf_timeout, 60}
+         , {gdss_jsf_maxconn, 10000}
+         , {gdss_jsf_process_options, []}
+         , {gdss_jsf_tcp_port, 7582}
+         , {gdss_jsf_timeout, 60}
+         , {gdss_tbf_maxconn, 10000}
+         , {gdss_tbf_process_options, []}
+         , {gdss_tbf_tcp_port, 7600}
+         , {gdss_tbf_timeout, 60}
+         , {gdss_ubf_maxconn, 10000}
+         , {gdss_ubf_process_options, []}
+         , {gdss_ubf_tcp_port, 7581}
+         , {gdss_ubf_timeout, 60}
+        ]}
+ ]}.

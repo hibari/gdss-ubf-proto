@@ -20,6 +20,7 @@
 -module(tbf_gdss_plugin).
 
 -include("ubf.hrl").
+-include("gmt_elog.hrl").
 
 -export([info/0, description/0, keepalive/0]).
 -export([handlerStart/1, handlerStop/3, handlerRpc/1]).
@@ -41,10 +42,10 @@
 -add_contract("./src/tbf_gdss_plugin").
 
 debug(Format, Data) ->
-    error_logger:info_msg(Format, Data).
+    ?ELOG_DEBUG(Format, Data).
 
 debug(Message) ->
-    error_logger:info_msg(Message, []).
+    ?ELOG_DEBUG(Message).
 
 info() ->
     "I am a Hibari Server v.0.1".

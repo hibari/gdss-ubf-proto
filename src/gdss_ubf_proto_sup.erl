@@ -56,13 +56,13 @@ init(_Args) ->
 
     Plugins = [ubf_gdss_plugin, ubf_gdss_stub_plugin],
 
-    CEBF = case gmt_config_svr:get_config_value_i(gdss_ebf_tcp_port, 7580) of
+    CEBF = case application:get_env(gdss_ubf_proto, gdss_ebf_tcp_port) of
                {ok, 0} ->
                    [];
                {ok, EBFPort} ->
-                   {ok,EBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_ebf_maxconn, 10000),
-                   {ok,EBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_ebf_timeout, 60),
-                   {ok,EBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_ebf_process_options, []),
+                   {ok,EBFMaxConn} = application:get_env(gdss_ubf_proto, gdss_ebf_maxconn),
+                   {ok,EBFIdleTimer} = application:get_env(gdss_ubf_proto, gdss_ebf_timeout),
+                   {ok,EBFPOTerm} = application:get_env(gdss_ubf_proto, gdss_ebf_process_options),
                    EBFProcessOptions = gmt_util:proplists_int_copy([], EBFPOTerm, [fullsweep_after, min_heap_size]),
 
                    EBFOptions =
@@ -77,13 +77,13 @@ init(_Args) ->
                    [EBFServer]
            end,
 
-    CUBF = case gmt_config_svr:get_config_value_i(gdss_ubf_tcp_port, 7581) of
+    CUBF = case application:get_env(gdss_ubf_proto, gdss_ubf_tcp_port) of
                {ok, 0} ->
                    [];
                {ok, UBFPort} ->
-                   {ok,UBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_ubf_maxconn, 10000),
-                   {ok,UBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_ubf_timeout, 60),
-                   {ok,UBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_ubf_process_options, []),
+                   {ok,UBFMaxConn} = application:get_env(gdss_ubf_proto, gdss_ubf_maxconn),
+                   {ok,UBFIdleTimer} = application:get_env(gdss_ubf_proto, gdss_ubf_timeout),
+                   {ok,UBFPOTerm} = application:get_env(gdss_ubf_proto, gdss_ubf_process_options),
                    UBFProcessOptions = gmt_util:proplists_int_copy([], UBFPOTerm, [fullsweep_after, min_heap_size]),
 
                    UBFOptions =
@@ -98,13 +98,13 @@ init(_Args) ->
                    [UBFServer]
            end,
 
-    CJSF = case gmt_config_svr:get_config_value_i(gdss_jsf_tcp_port, 7582) of
+    CJSF = case application:get_env(gdss_ubf_proto, gdss_jsf_tcp_port) of
                {ok, 0} ->
                    [];
                {ok, JSFPort} ->
-                   {ok,JSFMaxConn} = gmt_config_svr:get_config_value_i(gdss_jsf_maxconn, 10000),
-                   {ok,JSFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_jsf_timeout, 60),
-                   {ok,JSFPOTerm} = gmt_config_svr:get_config_value_term(gdss_jsf_process_options, []),
+                   {ok,JSFMaxConn} = application:get_env(gdss_ubf_proto, gdss_jsf_maxconn),
+                   {ok,JSFIdleTimer} = application:get_env(gdss_ubf_proto, gdss_jsf_timeout),
+                   {ok,JSFPOTerm} = application:get_env(gdss_ubf_proto, gdss_jsf_process_options),
                    JSFProcessOptions = gmt_util:proplists_int_copy([], JSFPOTerm, [fullsweep_after, min_heap_size]),
 
                    JSFOptions =
@@ -122,13 +122,13 @@ init(_Args) ->
     %% NOTE: This server implements native Thrift Binary Format.
     %% There is no need to have UBF over TBF listener except for test
     %% purposes so it has been removed.
-    CTBF = case gmt_config_svr:get_config_value_i(gdss_tbf_tcp_port, 7600) of
+    CTBF = case application:get_env(gdss_ubf_proto, gdss_tbf_tcp_port) of
                 {ok, 0} ->
                     [];
                 {ok, TBFPort} ->
-                    {ok,TBFMaxConn} = gmt_config_svr:get_config_value_i(gdss_tbf_maxconn, 10000),
-                    {ok,TBFIdleTimer} = gmt_config_svr:get_config_value_timeoutsec(gdss_tbf_timeout, 60),
-                    {ok,TBFPOTerm} = gmt_config_svr:get_config_value_term(gdss_tbf_process_options, []),
+                    {ok,TBFMaxConn} = application:get_env(gdss_ubf_proto, gdss_tbf_maxconn),
+                    {ok,TBFIdleTimer} = application:get_env(gdss_ubf_proto, gdss_tbf_timeout),
+                    {ok,TBFPOTerm} = application:get_env(gdss_ubf_proto, gdss_tbf_process_options),
                     TBFProcessOptions = gmt_util:proplists_int_copy([], TBFPOTerm, [fullsweep_after, min_heap_size]),
 
                     TBFOptions =
