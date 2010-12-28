@@ -261,19 +261,19 @@ add(_) ->
 
 add(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:add(Table, Key, Value) of
+    case catch brick_simple:add(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {key_exists, _} ->
             key_exists;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:add [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:add [~p]~n", [Unknown]),
@@ -292,19 +292,19 @@ replace(_) ->
 
 replace(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:replace(Table, Key, Value) of
+    case catch brick_simple:replace(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         key_not_exist ->
             key_not_exist;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:replace [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:replace [~p]~n", [Unknown]),
@@ -322,7 +322,7 @@ set(_) ->
 
 set(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:set(Table, Key, Value) of
+    case catch brick_simple:set(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
@@ -331,12 +331,12 @@ set(Table, Key, Value) ->
             debug("brick_simple:set [~p] returns as ok~n", [ts_error]),
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:set [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:set [~p]~n", [Unknown]),
@@ -366,19 +366,19 @@ delete(_) ->
 
 delete(Table, Key, Flags) ->
     StartTime = erlang:now(),
-    case brick_simple:delete(Table, Key, Flags) of
+    case catch brick_simple:delete(Table, Key, Flags) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         key_not_exist ->
             key_not_exist;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:delete [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:delete [~p]~n", [Unknown]),
@@ -409,7 +409,7 @@ get(_) ->
 
 get(Table, Key, Flags) ->
     StartTime = erlang:now(),
-    case brick_simple:get(Table, Key, Flags) of
+    case catch brick_simple:get(Table, Key, Flags) of
         {ok, Timestamp, Value} ->
             {ok, Key, Timestamp, Value, timer:now_diff(erlang:now(), StartTime)};
 
@@ -419,6 +419,9 @@ get(Table, Key, Flags) ->
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:get [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:get [~p]~n", [Unknown]),
