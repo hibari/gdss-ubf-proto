@@ -13,11 +13,11 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%
-%%% File    : ubf_gdss_stub_plugin_test.erl
+%%% File    : ubf_gdss_stub_plugin_tests.erl
 %%% Purpose : EUnit tests for ubf_gdss_stub_plugin
 %%%-------------------------------------------------------------------
 
--module(ubf_gdss_stub_plugin_test).
+-module(ubf_gdss_stub_plugin_tests).
 
 -compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
