@@ -52,9 +52,9 @@
 %%%----------------------------------------------------------------------
 
 all_tables() ->
-    all_tables(gdss).
+    all_tables(gdss_brick).
 
-all_tables(gdss) ->
+all_tables(gdss_brick) ->
     [
      {a, [], false}
      , {b, [], false}
@@ -109,9 +109,9 @@ create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
 simple_internal_setup() ->
     _ = application:stop(gdss_admin),
     _ = application:stop(gdss_client),
-    _ = application:stop(gdss),
+    _ = application:stop(gdss_brick),
     _ = os:cmd("rm -fr Schema.local hlog.*"),
-    ok = application:start(gdss),
+    ok = application:start(gdss_brick),
     ok = application:start(gdss_client),
     ok = application:start(gdss_admin),
     brick_admin:bootstrap_local([], true, $/, 3, 1, 1, []),
@@ -122,7 +122,7 @@ simple_internal_setup() ->
 simple_internal_teardown() ->
     ok = application:stop(gdss_admin),
     ok = application:stop(gdss_client),
-    ok = application:stop(gdss),
+    ok = application:stop(gdss_brick),
     _ = os:cmd("rm -fr Schema.local hlog.*"),
     ok.
 
