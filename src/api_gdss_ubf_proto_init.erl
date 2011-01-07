@@ -52,9 +52,9 @@
 %%%----------------------------------------------------------------------
 
 all_tables() ->
-    all_tables(gdss).
+    all_tables(gdss_brick).
 
-all_tables(gdss) ->
+all_tables(gdss_brick) ->
     [
      {a, [], false}
      , {b, [], false}
@@ -79,7 +79,7 @@ create_tables(Nodes, ChainLen, GDSSAdmin) when is_list(Nodes) ->
 create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
   when is_list(Nodes),
        is_integer(NumNodesPerBlock), is_integer(BlockMultFactor) ->
-    lists:map(
+    lists:foreach(
       fun({Tab, _Opts, BigP}) ->
               ChDesc = rpc:call(GDSSAdmin, brick_admin, make_chain_description,
                                 [Tab, ChainLen, Nodes,
@@ -107,22 +107,28 @@ create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
 
 
 simple_internal_setup() ->
-    application:stop(gdss),
-    os:cmd("rm -fr Schema.local hlog.*"),
-    application:start(gdss),
+    _ = application:stop(gdss_admin),
+    _ = application:stop(gdss_client),
+    _ = application:stop(gdss_brick),
+    _ = os:cmd("rm -fr Schema.local hlog.*"),
+    ok = application:start(gdss_brick),
+    ok = application:start(gdss_client),
+    ok = application:start(gdss_admin),
     brick_admin:bootstrap_local([], true, $/, 3, 1, 1, []),
     create_tables(),
     wait_for_tables(),
     ok.
 
 simple_internal_teardown() ->
-    application:stop(gdss),
-    os:cmd("rm -fr Schema.local hlog.*"),
+    ok = application:stop(gdss_admin),
+    ok = application:stop(gdss_client),
+    ok = application:stop(gdss_brick),
+    _ = os:cmd("rm -fr Schema.local hlog.*"),
     ok.
 
 simple_soft_reset() ->
-    [ ok = simple_soft_reset(Tab) || {Tab,_,_} <- all_tables() ],
-    ok = gmt_config_svr:reload_config(),
+    _ = [ ok = simple_soft_reset(Tab) || {Tab,_,_} <- all_tables() ],
+    {ok, _} = gmt_otp:reload_config(),
     ok.
 
 simple_soft_reset(Tab) ->
@@ -146,8 +152,9 @@ wait_for_tables() ->
     wait_for_tables(node()).
 
 wait_for_tables(GDSSAdmin) ->
-    [ gmt_loop:do_while(fun poll_table/1, {GDSSAdmin,not_ready,Tab})
-      || {Tab,_,_} <- all_tables() ].
+    _ = [ ok = gmt_loop:do_while(fun poll_table/1, {GDSSAdmin,not_ready,Tab})
+          || {Tab,_,_} <- all_tables() ],
+    ok.
 
 poll_table({GDSSAdmin,not_ready,Tab} = T) ->
     TabCh = gmt_util:atom_ify(gmt_util:list_ify(Tab) ++ "_ch1"),
@@ -185,6 +192,6 @@ running_bricks() ->
                             GH = proplists:get_value(ghash, Ps),
                             Cs = lists:usort(brick_hash:all_chains(GH, current)
                                              ++
-                                             brick_hash:all_chains(GH, new)),
+                                                 brick_hash:all_chains(GH, new)),
                             {Tab, [Br || {_Ch, Brs} <- Cs, Br <- Brs]}
                     end, [tab1] ++ [Tab || {Tab, _, _} <- all_tables()])).

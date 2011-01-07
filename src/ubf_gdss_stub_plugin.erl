@@ -26,7 +26,7 @@
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
--add_contract("ubf_gdss_stub_plugin").
+-add_contract("./src/ubf_gdss_stub_plugin").
 -add_types(ubf_gdss_plugin).
 
 info() ->
@@ -118,7 +118,7 @@ get_cached_get_value(Size) ->
     Key = {?MODULE,cached_get_value,Size},
     case erlang:get(Key) of
         undefined ->
-            random:seed(erlang:now()),
+            _ = random:seed(erlang:now()),
             Val = erlang:list_to_binary([ random:uniform(255) || _ <- lists:seq(1,Size) ]),
             erlang:put(Key, Val),
             Val;

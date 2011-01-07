@@ -13,11 +13,11 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%
-%%% File    : ubf_gdss_plugin_test.erl
+%%% File    : ubf_gdss_plugin_tests.erl
 %%% Purpose : EUnit tests for ubf_gdss_plugin
 %%%-------------------------------------------------------------------
 
--module(ubf_gdss_plugin_test).
+-module(ubf_gdss_plugin_tests).
 
 -compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
@@ -65,10 +65,29 @@ all_actual_tests_(Service,ServerId,Proto) ->
 %%% Internal
 %%%----------------------------------------------------------------------
 
+-define(APPS, [gdss_ubf_proto, gdss_admin, gdss_client, gdss_brick, gmt_util, inets, crypto, sasl]).
+
 test_setup() ->
+    %% @TODO - boilerplate start
+    os:cmd("rm -rf Schema.local hlog.* root"),
+    os:cmd("ln -s ../../gdss_admin/priv/root ."),
+    os:cmd("epmd -kill; sleep 1"),
+    os:cmd("epmd -daemon; sleep 1"),
+    {ok, _} = net_kernel:start(['eunit@localhost', shortnames]),
+    [ application:stop(A) || A <- ?APPS ],
+    [ ok=application:start(A) || A <- lists:reverse(?APPS) ],
+    random:seed(erlang:now()),
+    ok = application:set_env(gdss_brick, brick_max_log_size_mb, 1),
+    %% @TODO - boilerplate stop
+    api_gdss_ubf_proto_init:simple_internal_setup(),
     api_gdss_ubf_proto_init:simple_hard_reset().
 
 test_teardown(_X) ->
+    api_gdss_ubf_proto_init:simple_internal_teardown(),
+    %% @TODO - boilerplate start
+    [ application:stop(A) || A <- ?APPS ],
+    ok = net_kernel:stop(),
+    %% @TODO - boilerplate stop
     ok.
 
 client_connect(Service,ServerId,Proto) ->

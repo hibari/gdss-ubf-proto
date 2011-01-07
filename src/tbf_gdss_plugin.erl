@@ -20,6 +20,7 @@
 -module(tbf_gdss_plugin).
 
 -include("ubf.hrl").
+-include("gmt_elog.hrl").
 
 -export([info/0, description/0, keepalive/0]).
 -export([handlerStart/1, handlerStop/3, handlerRpc/1]).
@@ -39,13 +40,13 @@
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
--add_contract("tbf_gdss_plugin").
+-add_contract("./src/tbf_gdss_plugin").
 
 debug(Format, Data) ->
-    error_logger:info_msg(Format, Data).
+    ?ELOG_DEBUG(Format, Data).
 
 debug(Message) ->
-    error_logger:info_msg(Message, []).
+    ?ELOG_DEBUG(Message).
 
 info() ->
     "I am a Hibari Server v.0.1".
@@ -271,19 +272,19 @@ add(_) ->
 
 add(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:add(Table, Key, Value) of
+    case catch brick_simple:add(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {key_exists, _} ->
             key_exists;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:add [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:add [~p]~n", [Unknown]),
@@ -302,22 +303,19 @@ replace(_) ->
 
 replace(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:replace(Table, Key, Value) of
+    case catch brick_simple:replace(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         key_not_exist ->
             key_not_exist;
 
-        timeout ->
-            timeout;
-
-        {ts_error, _} ->
-            ts_error;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:replace [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:replace [~p]~n", [Unknown]),
@@ -335,19 +333,19 @@ set(_) ->
 
 set(Table, Key, Value) ->
     StartTime = erlang:now(),
-    case brick_simple:set(Table, Key, Value) of
+    case catch brick_simple:set(Table, Key, Value) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {ts_error, _} ->
             ts_error;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:set [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:set [~p]~n", [Unknown]),
@@ -377,19 +375,19 @@ delete(_) ->
 
 delete(Table, Key, Flags) ->
     StartTime = erlang:now(),
-    case brick_simple:delete(Table, Key, Flags) of
+    case catch brick_simple:delete(Table, Key, Flags) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         key_not_exist ->
             key_not_exist;
 
-        timeout ->
-            timeout;
-
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:delete [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:delete [~p]~n", [Unknown]),
@@ -420,7 +418,7 @@ get(_) ->
 
 get(Table, Key, Flags) ->
     StartTime = erlang:now(),
-    case brick_simple:get(Table, Key, Flags) of
+    case catch brick_simple:get(Table, Key, Flags) of
         {ok, Timestamp, Value} ->
             {ok, Key, Timestamp, Value, timer:now_diff(erlang:now(), StartTime)};
 
@@ -430,6 +428,9 @@ get(Table, Key, Flags) ->
         {txn_fail, [{_Integer, brick_not_available}]} ->
             debug("brick_simple:get [~p]~n", [brick_not_available]),
             brick_not_available;
+
+        {'EXIT', {timeout, _}} ->
+            timeout;
 
         Unknown ->
             debug("brick_simple:get [~p]~n", [Unknown]),
