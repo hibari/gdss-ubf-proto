@@ -50,4 +50,53 @@
          , {gdss_ubf_tcp_port, 7581}
          , {gdss_ubf_timeout, 60}
         ]}
+  %%
+  %% gdss_ebf_maxconn
+  %%   TODO
+  %%
+  %% gdss_ebf_process_options
+  %%   TODO
+  %%
+  %% gdss_ebf_tcp_port
+  %%   TCP port for the Hibari EBF protocol server.
+  %%
+  %% gdss_ebf_timeout
+  %%   TODO
+  %%
+  %% gdss_jsf_maxconn
+  %%   TODO
+  %%
+  %% gdss_jsf_process_options
+  %%   TODO
+  %%
+  %% gdss_jsf_tcp_port
+  %%   TODO
+  %%
+  %% gdss_jsf_timeout
+  %%   TODO
+  %%
+  %% gdss_tbf_maxconn
+  %%   TODO
+  %%
+  %% gdss_tbf_process_options
+  %%   TODO
+  %%
+  %% gdss_tbf_tcp_port
+  %%   TODO
+  %%
+  %% gdss_tbf_timeout
+  %%   TODO
+  %%
+  %% gdss_ubf_maxconn
+  %%   TODO
+  %%
+  %% gdss_ubf_process_options
+  %%   TODO
+  %%
+  %% gdss_ubf_tcp_port
+  %%   TODO
+  %%
+  %% gdss_ubf_timeout
+  %%   TODO
+  %%
  ]}.
