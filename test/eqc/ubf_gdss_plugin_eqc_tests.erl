@@ -12,7 +12,7 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%
-%%% File    : ubf_gdss_plugin_eqc_tests.erl
+%%% File    : ubf_gdss_plugin_eqc.erl
 %%% Purpose :
 %%%----------------------------------------------------------------------
 
@@ -25,7 +25,8 @@
 
 -include("ubf_gdss_plugin.hrl").
 
--export([run_tests_/0, run_tests/0, run_tests/1, run_parallel_tests/0, run_parallel_tests/1]).
+%%DISABLE -export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
+-export([run/0, run/1, run_parallel/0, run_parallel/1]).
 -export([sample_commands/0, sample_commands/1, prop_commands/0, prop_commands/1]).
 -export([counterexample_commands/0, counterexample_commands/1, counterexample_commands/2]).
 -export([counterexample_commands_read/1, counterexample_commands_write/1, counterexample_commands_write/2]).
@@ -37,7 +38,7 @@
 
 %%TODO: -behaviour(gmt_eqc_ubf).
 
--define(INIT_MOD, api_gdss_ubf_proto_init).
+-define(INIT_MOD, ubf_gdss_eunit_utils).
 
 %%
 %% TODO:
@@ -58,20 +59,20 @@
 %%% API
 %%%----------------------------------------------------------------------
 
-%% external API
-run_tests_() ->
-    {timeout, 60, [fun() -> run_tests() end]}.
+%% run from eunit
+%% eunit_test_() ->
+%%    gmt_eqc:eunit_module(?MODULE, 500).
 
-run_tests() ->
-    run_tests(500).
+run() ->
+    run(500).
 
-run_tests(NumTests) ->
-    eqc:module({numtests, NumTests}, ?MODULE).
+run(NumTests) ->
+    eqc:module({numtests,NumTests}, ?MODULE).
 
-run_parallel_tests() ->
-    run_parallel_tests(500).
+run_parallel() ->
+    run_parallel(500).
 
-run_parallel_tests(NumTests) ->
+run_parallel(NumTests) ->
     eqc:quickcheck(eqc:numtests(NumTests,noshrink(prop_commands([{parallel,true}])))).
 
 %% sample commands
@@ -142,7 +143,7 @@ ubf_command_custom(_Gen,_Mod,_S) ->
 
 %% (Contract::atom(),TypeName::atom(),Type::tuple()) -> term()
 ubf_rpc(Contract,_TypeName,Type) ->
-    case ubf_client:lpc(Contract, Type, none, none) of
+    case ubf_client:lpc(Contract, Type) of
         {reply,Reply,none} ->
             Reply;
         Err ->

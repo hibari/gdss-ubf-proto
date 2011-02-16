@@ -13,11 +13,11 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 %%%
-%%% File     : api_gdss_init.erl
-%%% Purpose  : API GDSS
+%%% File     : ubf_gdss_eunit_utils.erl
+%%% Purpose  : UBF GDSS EUnit Utils
 %%%----------------------------------------------------------------------
 
--module(api_gdss_ubf_proto_init).
+-module(ubf_gdss_eunit_utils).
 
 -include("ubf_gdss_plugin.hrl").
 
@@ -105,25 +105,16 @@ create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
     ok = rpc:call(GDSSAdmin, brick_admin, spam_gh_to_all_nodes, []),
     ok.
 
-
 simple_internal_setup() ->
-    _ = application:stop(gdss_admin),
-    _ = application:stop(gdss_client),
-    _ = application:stop(gdss_brick),
-    _ = os:cmd("rm -fr Schema.local hlog.*"),
-    ok = application:start(gdss_brick),
-    ok = application:start(gdss_client),
-    ok = application:start(gdss_admin),
-    brick_admin:bootstrap_local([], true, $/, 3, 1, 1, []),
+    X = brick_eunit_utils:setup_and_bootstrap(),
     create_tables(),
     wait_for_tables(),
-    ok.
+    application:start(gdss_ubf_proto),
+    X.
 
 simple_internal_teardown() ->
-    ok = application:stop(gdss_admin),
-    ok = application:stop(gdss_client),
-    ok = application:stop(gdss_brick),
-    _ = os:cmd("rm -fr Schema.local hlog.*"),
+    application:stop(gdss_ubf_proto),
+    brick_eunit_utils:teardown(),
     ok.
 
 simple_soft_reset() ->
@@ -141,8 +132,14 @@ simple_soft_reset(Tab) ->
     end.
 
 simple_hard_reset() ->
-    %% no way to delete and re-create tables
-    simple_soft_reset().
+    case lists:keymember(gdss_ubf_proto, 1, application:which_applications()) of
+        true ->
+            %% no way to delete and re-create tables
+            simple_soft_reset();
+        false ->
+            simple_internal_teardown(),
+            simple_internal_setup()
+    end.
 
 %%%----------------------------------------------------------------------
 %%% Internal functions
@@ -162,7 +159,7 @@ poll_table({GDSSAdmin,not_ready,Tab} = T) ->
         {ok, healthy} ->
             {false, ok};
         _ ->
-            ok = timer:sleep(250),
+            ok = timer:sleep(50),
             {true, T}
     end.
 
