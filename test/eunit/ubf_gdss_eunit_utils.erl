@@ -70,37 +70,34 @@ create_tables() ->
 create_tables(Nodes) when is_list(Nodes) ->
     create_tables(Nodes, 1).
 
-create_tables(Nodes, ChainLen) when is_list(Nodes) ->
-    create_tables(Nodes, ChainLen, node()).
+create_tables(Nodes, BricksPerChain) when is_list(Nodes) ->
+    create_tables(Nodes, BricksPerChain, node()).
 
-create_tables(Nodes, ChainLen, GDSSAdmin) when is_list(Nodes) ->
-    create_tables(Nodes, ChainLen, GDSSAdmin, 0, 0).
+create_tables(Nodes, BricksPerChain, GDSSAdmin) when is_list(Nodes) ->
+    create_tables(Nodes, BricksPerChain, GDSSAdmin, 0, 0).
 
-create_tables(Nodes, ChainLen, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
-  when is_list(Nodes),
+create_tables(Bricks, BricksPerChain, GDSSAdmin, NumNodesPerBlock, BlockMultFactor)
+  when is_list(Bricks),
        is_integer(NumNodesPerBlock), is_integer(BlockMultFactor) ->
     lists:foreach(
-      fun({Tab, _Opts, BigP}) ->
-              ChDesc = rpc:call(GDSSAdmin, brick_admin, make_chain_description,
-                                [Tab, ChainLen, Nodes,
-                                 NumNodesPerBlock, BlockMultFactor]),
-              ChWeights = [{Ch, 100} || {Ch, _} <- ChDesc],
-              ok = rpc:call(GDSSAdmin, brick_admin, add_table,
-                            [{global,brick_admin},
-                             Tab,
-                             ChDesc,
-                             [{hash_init, fun brick_hash:chash_init/3},
-                              {new_chainweights, ChWeights},
-                              {prefix_method, var_prefix},
-                              {prefix_separator, $/},
-                              {num_separators, 2},
-                              {implementation_module, brick_ets},
-                              if BigP -> {bigdata_dir, "."};
-                                 true -> ignored_property
-                              end,
-                              {do_logging, true},
-                              {do_sync, true}]
-                            ])
+      fun({Tab, _Opts, BigDataP}) ->
+              VarPrefixP = true,
+              VarPrefixSep = '$/',
+              VarPrefixNum = 2,
+
+              MakeChainArgs = [Tab, BricksPerChain, Bricks, NumNodesPerBlock, BlockMultFactor],
+              Chains = rpc:call(GDSSAdmin, brick_admin, make_chain_description, MakeChainArgs),
+
+              DataProps =
+                  [ maketab_bigdata || BigDataP ],
+              %% DISABLE ++ [ maketab_do_logging || DiskLoggingP ]
+              %% DISABLE ++ [ maketab_do_sync || SyncWritesP ],
+
+              MakeTableArgs = [DataProps, VarPrefixP, VarPrefixSep, VarPrefixNum, Chains],
+              BrickOpts = rpc:call(GDSSAdmin, brick_admin, make_common_table_opts, MakeTableArgs),
+
+              AddTableArgs = [Tab, Chains, BrickOpts],
+              ok = rpc:call(GDSSAdmin, brick_admin, add_table, AddTableArgs)
       end, all_tables()),
     ok = rpc:call(GDSSAdmin, brick_admin, spam_gh_to_all_nodes, []),
     ok.
@@ -123,7 +120,16 @@ simple_soft_reset() ->
     ok.
 
 simple_soft_reset(Tab) ->
-    Fun = fun({K,_TS}, _Acc) -> ok = brick_simple:delete(Tab, K) end,
+    Fun = fun({K,_TS}, _Acc) ->
+                  case brick_simple:delete(Tab, K) of
+                      ok ->
+                          ok;
+                      key_not_exist ->
+                          %% @TODO Need to understand this race
+                          %% condition ?
+                          ok
+                  end
+          end,
     case brick_simple:fold_key_prefix(Tab, <<>>, Fun, ok, [witness]) of
         {ok,ok,_} ->
             ok;

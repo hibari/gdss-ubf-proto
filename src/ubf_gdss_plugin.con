@@ -107,7 +107,7 @@ do1_res_fail()    = {key_exists, ts()} |
 do_res_fail()     = {txn_fail, [{integer(), do1_res_fail()}]};
 
 do_req()          = {do, table(), do_op_list(), do_flags_list(), timeout()};
-do_res()          = [do1_res_ok()|do1_res_fail()] | do_res_fail();
+do_res()          = [do1_res_ok() | do1_res_fail()] | do_res_fail();
 
 %% Simplified, single-key API ops
 %%
@@ -130,12 +130,12 @@ replace_req()     = {replace, table(),
 set_req()         = {set, table(),
                      key(), val(), exp_time(), flags_list(), timeout()};
 
-add_res()         = do1_res_ok() | do1_res_fail();
-delete_res()      = do1_res_ok() | do1_res_fail();
-get_many_res()    = do1_res_ok() | do1_res_fail();
-get_res()         = do1_res_ok() | do1_res_fail();
-replace_res()     = do1_res_ok() | do1_res_fail();
-set_res()         = do1_res_ok() | do1_res_fail();
+add_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
+delete_res()      = do1_res_ok() | do1_res_fail() | do_res_fail();
+get_many_res()    = do1_res_ok() | do1_res_fail() | do_res_fail();
+get_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
+replace_res()     = do1_res_ok() | do1_res_fail() | do_res_fail();
+set_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
 
 brick_status_req() = {brick_status, atom(), atom(), timeout()};
 brick_status_res() = {ok, term()} | noproc;

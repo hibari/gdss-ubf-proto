@@ -25,8 +25,7 @@
 
 -include("ubf_gdss_plugin.hrl").
 
-%%DISABLE -export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
--export([run/0, run/1, run_parallel/0, run_parallel/1]).
+-export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
 -export([sample_commands/0, sample_commands/1, prop_commands/0, prop_commands/1]).
 -export([counterexample_commands/0, counterexample_commands/1, counterexample_commands/2]).
 -export([counterexample_commands_read/1, counterexample_commands_write/1, counterexample_commands_write/2]).
@@ -35,6 +34,9 @@
 -export([ubf_initial_state/0, ubf_state_is_sane/1, ubf_next_state/3, ubf_precondition/2, ubf_postcondition/3]).
 -export([ubf_commands_setup/1, ubf_commands_teardown/1, ubf_commands_teardown/2]).
 -export([ubf_rpc/3]).
+
+%% testing
+-export([tabgen/0, keygen/0, keypartgen/0]).
 
 %%TODO: -behaviour(gmt_eqc_ubf).
 
@@ -60,8 +62,8 @@
 %%%----------------------------------------------------------------------
 
 %% run from eunit
-%% eunit_test_() ->
-%%    gmt_eqc:eunit_module(?MODULE, 500).
+eunit_test_() ->
+    gmt_eqc:eunit_module(?MODULE, 500).
 
 run() ->
     run(500).
@@ -124,6 +126,15 @@ ubf_command_typename(_S,_Contract,TypeNames) ->
     oneof(TypeNames).
 
 %% (Gen::fun(),Mod::atom(),S::symbolic_state(),Contract::atom(),TypeName::atom(),TypeStack::list()) -> gen()
+ubf_command_typegen(Gen,Mod,S,Contract,table=TypeName,TypeStack) ->
+    frequency([{9, tabgen()}                                 %% 90% existing table
+               , {1, Gen(Mod,S,Contract,TypeName,TypeStack)} %% 10% default generator
+              ]);
+ubf_command_typegen(Gen,Mod,S,Contract,key=TypeName,TypeStack) ->
+    frequency([{9, keygen()}                                 %% 90%
+               , {1, Gen(Mod,S,Contract,TypeName,TypeStack)} %% 10% default generator
+              ]);
+
 ubf_command_typegen(Gen,Mod,S,Contract,TypeName,TypeStack) ->
     %% DEBUG io:format("~p ~p~n", [TypeName, TypeStack]),
     Gen(Mod,S,Contract,TypeName,TypeStack).
@@ -200,5 +211,27 @@ ubf_commands_teardown(_,_S) ->
 %%%----------------------------------------------------------------------
 %%% INTERNAL
 %%%----------------------------------------------------------------------
+
+tables() ->
+    [Tab || {Tab,_,_} <- ubf_gdss_eunit_utils:all_tables() ].
+
+tabgen() ->
+    elements(tables()).
+
+keygen() ->
+    ?LET(N, choose(0, 4),
+         ?LET(Parts, vector(N, keypartgen()),
+              case Parts of
+                  [] ->
+                      <<>>;
+                  _ ->
+                      ?LET(Root, frequency([{9, <<"/">>}, {1, <<>>}]),
+                           iolist_to_binary([Root, filename:join(Parts)]))
+              end)).
+
+keypartgen() ->
+    frequency([{9, elements([<<>>, <<"a">>, <<"b">>, <<"c">>, <<"d">>])}
+               , {1, binary()}
+              ]).
 
 -endif. %% -ifdef(EQC).
