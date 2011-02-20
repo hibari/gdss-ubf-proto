@@ -63,7 +63,7 @@
 
 %% run from eunit
 eunit_test_() ->
-    gmt_eqc:eunit_module(?MODULE, 500).
+    gmt_eqc:eunit_module(?MODULE, 10).
 
 run() ->
     run(500).
