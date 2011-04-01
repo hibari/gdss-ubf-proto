@@ -73,7 +73,7 @@
 
 %% run from eunit
 eunit_test_() ->
-    gmt_eqc:eunit_module(?MODULE, 10).
+    gmt_eqc:eunit_module(?MODULE, 5).
 
 run() ->
     run(500).
@@ -144,7 +144,8 @@ ubf_command_typegen(Gen,Mod,S,Contract,key=TypeName,TypeStack) ->
     frequency([{9, keygen()}                                 %% 90%
                , {1, Gen(Mod,S,Contract,TypeName,TypeStack)} %% 10% default generator
               ]);
-
+ubf_command_typegen(_Gen,_Mod,_S,_Contract,timeout=_TypeName,_TypeStack) ->
+    gmt_eqc_gen:gmt_timeout([noninfinite]);
 ubf_command_typegen(Gen,Mod,S,Contract,TypeName,TypeStack) ->
     %% DEBUG io:format("~p ~p~n", [TypeName, TypeStack]),
     Gen(Mod,S,Contract,TypeName,TypeStack).

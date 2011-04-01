@@ -146,7 +146,7 @@ do_flags_list()   = [] | [sync_override];
 table()           = atom(nonempty,nonundefined);
 %% time_t = UNIX time_t value, 0..2^31
 time_t()          = integer();
-timeout()         = infinity | integer(); %% milliseconds
+timeout()         = integer(); %% milliseconds
 
 %% Misc misc misc.
 keepalive_req()   = keepalive;
