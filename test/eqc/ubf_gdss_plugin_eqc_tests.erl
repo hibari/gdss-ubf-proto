@@ -79,7 +79,7 @@ run() ->
     run(500).
 
 run(NumTests) ->
-    ?GMTQC:module({numtests,NumTests}, ?MODULE).
+    gmt_eqc:module({numtests,NumTests}, ?MODULE).
 
 run_parallel() ->
     run_parallel(500).
