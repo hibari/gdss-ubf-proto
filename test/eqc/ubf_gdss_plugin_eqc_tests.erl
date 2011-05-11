@@ -52,9 +52,15 @@
 
 -define(INIT_MOD, ubf_gdss_eunit_utils).
 
-%%
-%% TODO:
-%%
+%% R13 filename implementation
+-ifdef(old_filename).
+join(Parts) ->
+    Parts1 = [ binary_to_list(X) || X <- Parts ],
+    list_to_binary(filename:join(Parts1)).
+-else.
+-import(filename, [join/1]).
+-endif.
+
 
 %%%----------------------------------------------------------------------
 %%% records
@@ -237,7 +243,7 @@ keygen() ->
                       <<>>;
                   _ ->
                       ?LET(Root, frequency([{9, <<"/">>}, {1, <<>>}]),
-                           iolist_to_binary([Root, filename:join(Parts)]))
+                           iolist_to_binary([Root, join(Parts)]))
               end)).
 
 keypartgen() ->
