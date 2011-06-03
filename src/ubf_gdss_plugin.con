@@ -57,7 +57,7 @@ do_op_flag()      = %% Section: Sent by client, should not be sent by server.
                     %% Section: Sent by server, should not be sent by
                     %% client.
                     %%
-                    {val_len, integer()} |
+                    {val_len, len()} |
                     %% Section: Flags that pass through brick and are
                     %% stored with key, same as an Erlang property
                     %% list.
@@ -69,6 +69,7 @@ flags_list()      = [do_op_flag()];
 key()             = binary();
 val()             = binary();
 %% ts = timestamp = usually an int64: time_t * 1000000 + usecs
+len()             = integer();
 ts()              = integer();
 
 %% All primitive ops are bundled in a do_op_list().  I may also expose
@@ -101,6 +102,7 @@ do1_res_ok()      = ok |
 do1_res_fail()    = {key_exists, ts()} |
                     key_not_exist |
                     {ts_error, ts()} |
+                    {val_error, len()} |
                     invalid_flag_present |
                     %% The responsible brick is
                     %% unavailable/crashed/whatever.
