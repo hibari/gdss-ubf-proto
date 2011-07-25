@@ -115,16 +115,16 @@ test_get_add_set(Service,ServerId,Proto) ->
     [key_not_exist] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
 
     %% add - ok
-    [ok] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], 1000}),
+    [{ok, 1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], 1000}),
     %% add - ng
     [{key_exists,1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], 1000}),
     %% get - ok
     [{ok,1,<<"bar">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
 
     %% set - ok
-    [ok] = client_rpc(Pid,{do, a, [{set, <<"foo">>, 2, <<"baz">>, 0, []}], [], 1000}),
+    [{ok, 2}] = client_rpc(Pid,{do, a, [{set, <<"foo">>, 2, <<"baz">>, 0, []}], [], 1000}),
     %% get - ok
-    [{ok,2,<<"baz">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
+    [{ok, 2, <<"baz">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
 
     ok = client_stop(Pid),
     ok.
@@ -139,23 +139,23 @@ test_simplified(Service,ServerId,Proto) ->
     key_not_exist = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
 
     %% add - ok
-    ok = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
     %% add - ng
-    {key_exists,_} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {key_exists, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
     %% get - ok
-    {ok,_,<<"bar">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
+    {ok, _, <<"bar">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
 
     %% set - ok
-    ok = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
     %% get - ok
-    {ok,_,<<"baz">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
+    {ok, _, <<"baz">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
 
-    ok = client_rpc(Pid,{replace, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{replace, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
     key_not_exist = client_rpc(Pid,{replace, a, <<"foo-not-exist">>, <<"baz">>, 0, [], 1000}),
 
-    ok = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
-    ok = client_rpc(Pid,{set, a, <<"bar">>, <<"baz">>, 0, [], 1000}),
-    ok = client_rpc(Pid,{set, a, <<"baz">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"bar">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"baz">>, <<"baz">>, 0, [], 1000}),
     {ok, {[_,_], true}} = client_rpc(Pid,{get_many, a, <<"">>, 2, [], 1000}),
     {ok, {[_,_,_], false}} = client_rpc(Pid,{get_many, a, <<"">>, 3, [], 1000}),
     {ok, {[], false}} = client_rpc(Pid,{get_many, a, <<"zzzz">>, 99, [], 1000}),
