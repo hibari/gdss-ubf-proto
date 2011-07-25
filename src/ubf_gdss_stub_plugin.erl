@@ -62,6 +62,8 @@ handlerRpc({do, _Table, [{replace, _Key, _TStamp, _Val, _ExpTime, _EFlags}], _Fl
     [ok];
 handlerRpc({do, _Table, [{set, _Key, _TStamp, _Val, _ExpTime, _EFlags}], _Flags, _Timeout}) ->
     [ok];
+handlerRpc({do, _Table, [{rename, _Key, _TStamp, _NewKey, _ExpTime, _EFlags}], _Flags, _Timeout}) ->
+    [ok];
 handlerRpc({do, _Table, [{delete, _Key, _EFlags}], _Flags, _Timeout}) ->
     [ok];
 handlerRpc({do, _Table, [{get, _Key, _EFlags}], _Flags, _Timeout}) ->
@@ -69,11 +71,13 @@ handlerRpc({do, _Table, [{get, _Key, _EFlags}], _Flags, _Timeout}) ->
 handlerRpc({do, _Table, _Ops, _Flags, _Timeout}) ->
     not_implemented;
 handlerRpc({add, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
 handlerRpc({replace, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
 handlerRpc({set, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
+handlerRpc({rename, _Table, _Key, _NewKey, _ExpTime, _Flags, _Timeout}) ->
+    {ok, 0};
 handlerRpc({delete, _Table, _Key, _Flags, _Timeout}) ->
     ok;
 handlerRpc({get, _Table, _Key, _Flags, _Timeout}) ->

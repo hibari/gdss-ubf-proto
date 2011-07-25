@@ -38,6 +38,7 @@ get_many_req()  => not_implemented();
 get_req()       => get_res();
 replace_req()   => replace_res();
 set_req()       => set_res();
+rename_req()    => rename_res();
 
 %% Status API
 brick_status_req() => not_implemented();
