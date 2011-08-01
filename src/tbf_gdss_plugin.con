@@ -82,6 +82,62 @@ get()             = {struct, name(), [field_table() | field_key() | field_is_wit
 get_req()         = {message, <<"Get">>, 'T-CALL', seqid(), gen_params()};
 get_res()         = {message, <<"Get">>, 'T-REPLY', seqid(), gen_params()};
 
+do_field_is_witness()= {field, name(), 'T-BOOL', 2, is_witness()};
+do_field_key()       = {field, name(), 'T-BINARY', 1, key()};
+do_field_val()       = {field, name(), 'T-BINARY', 2, val()};
+do_field_must_exist()= {field, name(), 'T-BOOL', 2, must_exist()};
+do_field_table()     = {field, name(), 'T-BINARY', 1, table()};
+
+do_txn()          = {struct, name(), []};
+do_add()          = {struct, name(), [do_field_key() | do_field_val()]};
+do_replace()      = {struct, name(), [do_field_key() | do_field_val()]};
+do_set()          = {struct, name(), [do_field_key() | do_field_val()]};
+do_delete()       = {struct, name(), [do_field_key() | do_field_must_exist()]};
+do_get()          = {struct, name(), [do_field_key() | do_field_is_witness()]};
+
+do_op()           = {struct, name(), [{field, name(), 'T-STRUCT', integer(),
+                                       do_txn() | do_add() | do_replace() | do_set() | do_delete() | do_get()}]};
+do_ops()          = {field, name(), 'T-LIST', integer(), {list, 'T-STRUCT', [do_op()]}};
+do()              = {struct, name(), [{field, name(), 'T-STRUCT', 1, {struct, name(), [do_field_table() | do_ops()]}}]};
+
+do_req()          = {message, <<"Do">>, 'T-CALL', seqid(), do()};
+do_res()          = {message, <<"Do">>, 'T-REPLY', seqid(), gen_params()};
+
+
+%%                {struct,<<>>,
+%%                 [{field,<<>>,'T-STRUCT',1,
+%%                   {struct,<<>>,
+%%                    [{field,<<>>,'T-BINARY',1,<<"tab1">>},
+%%                     {field,<<>>,'T-LIST',2,
+%%                      {list,'T-STRUCT',
+%%                       [{struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',1,{struct,<<>>,[]}}]},
+%%                        {struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',2,
+%%                           {struct,<<>>,
+%%                            [{field,<<>>,'T-BINARY',1,<<"yo-key">>},
+%%                             {field,<<>>,'T-BINARY',2,<<"Yo!">>}]}}]},
+%%                        {struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',2,
+%%                           {struct,<<>>,
+%%                            [{field,<<>>,'T-BINARY',1,<<"ho-key">>},
+%%                             {field,<<>>,'T-BINARY',2,<<"Ho!">>}]}}]},
+%%                        {struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',3,
+%%                           {struct,<<>>,
+%%                            [{field,<<>>,'T-BINARY',1,<<"yo-key">>},
+%%                             {field,<<>>,'T-BINARY',2,<<"Yo-yo!">>}]}}]},
+%%                        {struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',5,
+%%                           {struct,<<>>,
+%%                            [{field,<<>>,'T-BINARY',1,<<"yo-key">>}]}}]},
+%%                        {struct,<<>>,
+%%                         [{field,<<>>,'T-STRUCT',5,
+%%                           {struct,<<>>,
+%%                            [{field,<<>>,'T-BINARY',1,
+%%                              <<"ho-key">>}]}}]}]}}]}}]}}
+
+
 keepalive_req()   = {message, <<"keepalive">>, 'T-CALL', seqid(), gen_null()};
 keepalive_res()   = {message, <<"keepalive">>, 'T-REPLY', seqid(), gen_null()};
 
@@ -103,6 +159,7 @@ replace_req()     => replace_res();
 set_req()         => set_res();
 delete_req()      => delete_res();
 get_req()         => get_res();
+do_req()          => do_res();
 
 %% others
 keepalive_req()   => keepalive_res();
