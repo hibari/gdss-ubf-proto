@@ -238,7 +238,6 @@ handlerRpc({message, <<"Get">>, 'T-CALL', SeqId, Params}) ->
             {message, <<"Get">>, 'T-REPLY', SeqId, Exception}
     end;
 handlerRpc({message,<<"keepalive">>, 'T-CALL', SeqId, _NoArg}) ->
-    debug("oh yeah"),
     %% TODO(gki): no_reply
     {message, <<"keepalive">>, 'T-REPLY', SeqId, {struct, <<>>, []}};
 handlerRpc({message,<<"contract">>,'T-CALL',SeqId,_NoArg}) ->
