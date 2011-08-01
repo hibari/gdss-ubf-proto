@@ -61,6 +61,63 @@ struct Get {
   3: optional bool is_witness,
 }
 
+struct GetMany {
+  1: required string table,
+  2: required binary key,
+  3: required i64 max_num,
+  4: optional bool is_witness,
+}
+
+struct DoTxn {
+
+}
+
+struct DoAdd {
+  1: required binary key,
+  2: required binary value,
+}
+
+struct DoReplace {
+  1: required binary key,
+  2: required binary value,
+}
+
+struct DoSet {
+  1: required binary key,
+  2: required binary value,
+}
+
+struct DoDelete {
+  1: required binary key,
+  2: optional bool must_exist,
+}
+
+struct DoGet {
+  1: required binary key,
+  2: optional bool is_witness,
+}
+
+struct DoGetMany {
+  1: required binary key,
+  2: required i64 max_num,
+  3: optional bool is_witness,
+}
+
+union DoOp {
+  1: DoTxn     make_txn;
+  2: DoAdd     make_add;
+  3: DoReplace make_replace;
+  4: DoSet     make_set;
+  5: DoDelete  make_delete;
+  6: DoGet     make_get;
+  7: DoGetMany make_get_many;
+}
+
+struct Do {
+  1: required string table,
+  2: required list<DoOp> op_list,
+}
+
 struct HibariResponse {
   1: optional i64 timestamp,
   2: optional binary key,
@@ -129,4 +186,17 @@ service Hibari {
    */
   HibariResponse Get(1: Get request)
       throws (1:HibariException ouch)
+
+  /**
+   * GetMany
+   */
+  HibariResponse GetMany(1: GetMany request)
+      throws (1:HibariException ouch)
+
+  /**
+   * Do
+   */
+  HibariResponse Do(1: Do request)
+      throws (1:HibariException ouch)
+
 }
