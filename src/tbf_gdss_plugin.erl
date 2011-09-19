@@ -243,7 +243,8 @@ handlerRpc({message, <<"Do">>, 'T-CALL', SeqId, Params}) ->
     Res = do(Params),
     io:format("Do: ~p~n", [Res]),
 
-    Response = {struct, <<>>, []},
+    R1 = {struct, <<>>, [{field, <<>>, 'T-BOOL', 4, false}]},
+    Response = {struct, <<>>, [{field, <<>>, 'T-LIST', 1, {list, 'T-STRUCT', [R1, R1]}}]},
     Response1 = {field, <<>>, 'T-STRUCT', 0, Response},
     Responses = {struct, <<>>, [Response1]},
     {message, <<"Do">>, 'T-REPLY', SeqId, Responses};
@@ -276,24 +277,28 @@ handlerRpc(Event) ->
 
 do({struct, <<>>, [{field, <<>>, 'T-STRUCT', 1, {struct, <<>>, Args}}]}) when is_list(Args) ->
     {field, _, 'T-BINARY', 1, TableInBinary} = lists:keyfind(1, 4, Args),
-    _Table = gmt_util:atom_ify(TableInBinary),
+    Table = gmt_util:atom_ify(TableInBinary),
     {field, _, 'T-LIST', 2, {list, 'T-STRUCT', OpList}} = lists:keyfind(2, 4, Args),
 
     DoOps = lists:map(fun make_do_op/1, OpList),
-    DoOps;
-    %%do(DoOps);
-do(DoOps) when is_list(DoOps) ->
+    io:format("DoOps: ~p~n", [DoOps]),
+    do(Table, DoOps);
+do(_) ->
+    unknown_args.
+
+do(Table, DoOps) when is_list(DoOps) ->
     StartTime = erlang:now(),
-    case catch brick_simple:do(DoOps) of
+    case catch brick_simple:do(Table, DoOps) of
         ok ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
-%%        {key_exists, _} ->
-%%            key_exists;
+        {txn_fail, List} ->
+            debug("brick_simple:do {txn_fail, ~p}~n", [List]),
+            txn_fail;
 
-%%        {txn_fail, [{_Integer, brick_not_available}]} ->
-%%            debug("brick_simple:add [~p]~n", [brick_not_available]),
-%%            brick_not_available;
+        {wrong_brick, Term} ->
+            debug("brick_simple:do {wrong_brick, ~p}~n", [Term]),
+            wrong_brick;
 
         {'EXIT', {timeout, _}} ->
             timeout;
@@ -301,9 +306,7 @@ do(DoOps) when is_list(DoOps) ->
         Unknown ->
             debug("brick_simple:do [~p]~n", [Unknown]),
             Unknown
-    end;
-do(_) ->
-    unknown_args.
+    end.
 
 -define(hibari_DO_TXN, 1).
 -define(hibari_DO_ADD, 2).
@@ -332,12 +335,11 @@ make_do_op(Op) ->
             {Key, Flags} = parse_delete_args(Args, 0),
             brick_server:make_delete(Key, Flags);
         ?hibari_DO_GET ->
-            {_Table, Key, Flags} = parse_get_args(Args),
+            {Key, Flags} = parse_get_args(Args, 0),
             brick_server:make_get(Key, Flags);
         ?hibari_DO_GET_MANY ->
             get_many
     end.
-
 
 %%               {message,<<"Do">>,'T-CALL',6,
 %%                {struct,<<>>,
@@ -516,19 +518,17 @@ delete(Table, Key, Flags) ->
 
 
 get({struct, <<>>, Args}) when is_list(Args) ->
-    {Table, Key, Flags} = parse_get_args(Args),
+    Table = parse_table_name(Args),
+    {Key, Flags} = parse_get_args(Args, 1),
     ?MODULE:get(Table, Key, Flags);
 get(_) ->
     unknown_args.
 
-parse_get_args(Args) ->
-    {field, _, 'T-BINARY',  1, TableInBinary} = lists:keyfind(1, 4, Args),
-    Table = gmt_util:atom_ify(TableInBinary),
+parse_get_args(Args, Offset) ->
+    {field, _, 'T-BINARY',  _, Key} = lists:keyfind(Offset + 1, 4, Args),
 
-    {field, _, 'T-BINARY',  2, Key} = lists:keyfind(2, 4, Args),
-
-    IsWitness = case lists:keyfind(3, 4, Args) of
-                    {field, _, 'T-BOOL', 3, Arg3} ->
+    IsWitness = case lists:keyfind(Offset + 2, 4, Args) of
+                    {field, _, 'T-BOOL', _, Arg3} ->
                         Arg3;
                     _ ->
                         undefined
@@ -539,7 +539,7 @@ parse_get_args(Args) ->
                 _ -> []
             end,
 
-    {Table, Key, Flags}.
+    {Key, Flags}.
 
 get(Table, Key, Flags) ->
     StartTime = erlang:now(),

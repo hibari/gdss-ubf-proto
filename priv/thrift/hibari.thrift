@@ -122,6 +122,11 @@ struct HibariResponse {
   1: optional i64 timestamp,
   2: optional binary key,
   3: optional binary value,
+  4: optional bool is_error,
+}
+
+struct HibariDoResponse {
+  1: required list<HibariResponse> resp_list,
 }
 
 /**
@@ -196,7 +201,7 @@ service Hibari {
   /**
    * Do
    */
-  HibariResponse Do(1: Do request)
+  HibariDoResponse Do(1: Do request)
       throws (1:HibariException ouch)
 
 }

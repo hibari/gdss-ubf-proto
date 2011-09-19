@@ -48,6 +48,7 @@ field_must_exist()= {field, name(), 'T-BOOL', 3, must_exist()};
 field_table()     = {field, name(), 'T-BINARY', 1, table()};
 field_timestamp() = {field, name(), 'T-I64', 1, timestamp()};
 field_val()       = {field, name(), 'T-BINARY', 3, val()};
+field_is_error()  = {field, name(), 'T-BOOL', 4, boolean()};
 field_what()      = {field, name(), 'T-I32', 2, what()};
 field_why()       = {field, name(), 'T-BINARY', 3, why()};
 
@@ -101,7 +102,9 @@ do_ops()          = {field, name(), 'T-LIST', integer(), {list, 'T-STRUCT', [do_
 do()              = {struct, name(), [{field, name(), 'T-STRUCT', 1, {struct, name(), [do_field_table() | do_ops()]}}]};
 
 do_req()          = {message, <<"Do">>, 'T-CALL', seqid(), do()};
-do_res()          = {message, <<"Do">>, 'T-REPLY', seqid(), gen_params()};
+%%do_res()          = {message, <<"Do">>, 'T-REPLY', seqid(), gen_params()};
+do_res1()         = {struct, name(), [field_timestamp() | field_key() | field_val() | field_is_error()]};
+do_res()          = {message, <<"Do">>, 'T-REPLY', seqid(), {struct, name(), [{field, name(), 'T-STRUCT', integer(), {struct, name(), [{field, name(), 'T-LIST', integer(), {list, 'T-STRUCT', [do_res1()]}}]}}]}};
 
 
 %%                {struct,<<>>,
