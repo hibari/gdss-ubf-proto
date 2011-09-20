@@ -38,6 +38,10 @@
 -define(hibari_TS_ERROR, 6).
 -define(hibari_KEY_EXISTS, 101).
 -define(hibari_KEY_NOT_EXISTS, 102).
+-define(hibari_TXN_FAIL, 201).
+
+-define(hibari_status_OK, 0).
+-define(hibari_status_ERROR, 8).
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
@@ -239,15 +243,31 @@ handlerRpc({message, <<"Get">>, 'T-CALL', SeqId, Params}) ->
             {message, <<"Get">>, 'T-REPLY', SeqId, Exception}
     end;
 handlerRpc({message, <<"Do">>, 'T-CALL', SeqId, Params}) ->
-    io:format("Do called~n"),
-    Res = do(Params),
-    io:format("Do: ~p~n", [Res]),
+    %%io:format("Do called~n"),
+    {Table, DoOps} = make_do_ops(Params),
+    %%io:format("DoOps: ~p~n", [DoOps]),
+    Res = do(Table, DoOps),
+    %%io:format("Do: ~p~n", [Res]),
 
-    R1 = {struct, <<>>, [{field, <<>>, 'T-BOOL', 4, false}]},
-    Response = {struct, <<>>, [{field, <<>>, 'T-LIST', 1, {list, 'T-STRUCT', [R1, R1]}}]},
-    Response1 = {field, <<>>, 'T-STRUCT', 0, Response},
-    Responses = {struct, <<>>, [Response1]},
-    {message, <<"Do">>, 'T-REPLY', SeqId, Responses};
+    case Res of
+        txn_fail ->
+            Exception = make_exception(?hibari_TXN_FAIL, "Transaction Failed"),
+            {message, <<"Do">>, 'T-REPLY', SeqId, Exception};
+        _ ->
+            DoOpTypes0 = [get_op_type(DoOp) || DoOp <- DoOps ],
+            DoOpTypes = lists:filter(fun(txn) -> false;
+                                        (_) -> true end,
+                                     DoOpTypes0),
+            %%io:format("DoOpTypes ~p~n", [DoOpTypes]),
+            R0 = [generate_result(DoOpType, DoResult) ||
+                     {DoOpType, DoResult} <- lists:zip(DoOpTypes, Res)],
+            %%io:format("Res: ~p~n", [R0]),
+
+            Response = {struct, <<>>, [{field, <<>>, 'T-LIST', 1, {list, 'T-STRUCT', R0}}]},
+            Response1 = {field, <<>>, 'T-STRUCT', 0, Response},
+            Responses = {struct, <<>>, [Response1]},
+            {message, <<"Do">>, 'T-REPLY', SeqId, Responses}
+    end;
 handlerRpc({message,<<"keepalive">>, 'T-CALL', SeqId, _NoArg}) ->
     %% TODO(gki): no_reply
     {message, <<"keepalive">>, 'T-REPLY', SeqId, {struct, <<>>, []}};
@@ -275,23 +295,14 @@ handlerRpc(Event) ->
 %%                                 {field,<<>>,'T-LIST',2,
 %%                                     {list,'T-STRUCT',[]}}]}}]}}
 
-do({struct, <<>>, [{field, <<>>, 'T-STRUCT', 1, {struct, <<>>, Args}}]}) when is_list(Args) ->
-    {field, _, 'T-BINARY', 1, TableInBinary} = lists:keyfind(1, 4, Args),
-    Table = gmt_util:atom_ify(TableInBinary),
+make_do_ops({struct, <<>>, [{field, <<>>, 'T-STRUCT', 1, {struct, <<>>, Args}}]}) when is_list(Args) ->
+    Table = parse_table_name(Args),
     {field, _, 'T-LIST', 2, {list, 'T-STRUCT', OpList}} = lists:keyfind(2, 4, Args),
-
     DoOps = lists:map(fun make_do_op/1, OpList),
-    io:format("DoOps: ~p~n", [DoOps]),
-    do(Table, DoOps);
-do(_) ->
-    unknown_args.
+    {Table, DoOps}.
 
 do(Table, DoOps) when is_list(DoOps) ->
-    StartTime = erlang:now(),
     case catch brick_simple:do(Table, DoOps) of
-        ok ->
-            {ok, timer:now_diff(erlang:now(), StartTime)};
-
         {txn_fail, List} ->
             debug("brick_simple:do {txn_fail, ~p}~n", [List]),
             txn_fail;
@@ -303,9 +314,9 @@ do(Table, DoOps) when is_list(DoOps) ->
         {'EXIT', {timeout, _}} ->
             timeout;
 
-        Unknown ->
-            debug("brick_simple:do [~p]~n", [Unknown]),
-            Unknown
+        Other ->
+            debug("brick_simple:do [~p]~n", [Other]),
+            Other
     end.
 
 -define(hibari_DO_TXN, 1).
@@ -340,6 +351,27 @@ make_do_op(Op) ->
         ?hibari_DO_GET_MANY ->
             get_many
     end.
+
+get_op_type(DoOp) when is_tuple(DoOp) ->
+    element(1, DoOp);
+get_op_type(DoOp) when is_atom(DoOp) ->
+    DoOp;
+get_op_type(_) ->
+    unknown.
+
+generate_result(add, ok) ->
+    Ok = {field, <<>>, 'T-I32', 4, ?hibari_status_OK},
+    {struct, <<>>, [Ok]};
+generate_result(delete, ok) ->
+    Ok = {field, <<>>, 'T-I32', 4, ?hibari_status_OK},
+    {struct, <<>>, [Ok]};
+generate_result(get, {ok, Ts, Value}) ->
+    Ok = {field, <<>>, 'T-I32', 4, ?hibari_status_OK},
+    FieldTimestamp = {field, <<>>, 'T-I64', 1, Ts},
+    FieldValue = {field, <<>>, 'T-BINARY', 3, Value},
+    {struct, <<>>, [FieldTimestamp, FieldValue, Ok]};
+generate_result(_, Result) ->
+    Result.
 
 %%               {message,<<"Do">>,'T-CALL',6,
 %%                {struct,<<>>,

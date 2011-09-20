@@ -20,6 +20,11 @@
 
 namespace java com.hibari.thrift
 
+enum StatusCode {
+  OK = 0,
+  ERROR = 8,
+}
+
 enum ErrorCode {
   UNKNOWN           = 1,
   UNKNOWN_ARGS      = 2,
@@ -115,18 +120,18 @@ union DoOp {
 
 struct Do {
   1: required string table,
-  2: required list<DoOp> op_list,
+  2: required list<DoOp> operations,
 }
 
 struct HibariResponse {
   1: optional i64 timestamp,
   2: optional binary key,
   3: optional binary value,
-  4: optional bool is_error,
+  4: optional StatusCode status,
 }
 
 struct HibariDoResponse {
-  1: required list<HibariResponse> resp_list,
+  1: required list<HibariResponse> responses,
 }
 
 /**
