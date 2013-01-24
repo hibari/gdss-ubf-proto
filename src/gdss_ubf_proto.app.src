@@ -22,7 +22,7 @@
 {application, gdss_ubf_proto,
  [
   {description, "Gemini Distributed Storage Service UBF Protocol Server"},
-  {vsn, "0.1.7"},
+  {vsn, "0.1.8"},
   {registered, []},
   {applications, [kernel, stdlib, sasl, gdss_client]},
   {mod, {gdss_ubf_proto, []}},
