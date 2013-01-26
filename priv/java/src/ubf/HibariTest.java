@@ -1,12 +1,12 @@
 ///----------------------------------------------------------------------
-/// Copyright (c) 2011 Gemini Mobile Technologies, Inc.  All rights reserved.
-/// 
+/// Copyright (c) 2011-2013 Hibari developers.  All rights reserved.
+///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
 /// You may obtain a copy of the License at
-/// 
+///
 ///     http://www.apache.org/licenses/LICENSE-2.0
-/// 
+///
 /// Unless required by applicable law or agreed to in writing, software
 /// distributed under the License is distributed on an "AS IS" BASIS,
 /// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -104,7 +104,7 @@ public class HibariTest
 	if (! ((UBFTuple)res4).value[0].equals(atom_ok) ||
 	    ! ((UBFTuple)res4).value[2].equals("bar"))
 	    System.exit(1);
-	
+
 	// set - ok
 	UBFObject res5 = ubf.rpc(
 		UBF.tuple( new UBFAtom("set"), atom_tab1,
@@ -124,7 +124,7 @@ public class HibariTest
 	if (! ((UBFTuple)res6).value[0].equals(atom_ok) ||
 	    ! ((UBFTuple)res6).value[2].equals("bar bar"))
 	    System.exit(1);
-	
+
     }
 }
 
