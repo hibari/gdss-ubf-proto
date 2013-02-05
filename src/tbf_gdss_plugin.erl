@@ -1,5 +1,5 @@
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2008-2011 Gemini Mobile Technologies, Inc.  All rights reserved.
+%%% Copyright (c) 2008-2013 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -238,7 +238,6 @@ handlerRpc({message, <<"Get">>, 'T-CALL', SeqId, Params}) ->
             {message, <<"Get">>, 'T-REPLY', SeqId, Exception}
     end;
 handlerRpc({message,<<"keepalive">>, 'T-CALL', SeqId, _NoArg}) ->
-    debug("oh yeah"),
     %% TODO(gki): no_reply
     {message, <<"keepalive">>, 'T-REPLY', SeqId, {struct, <<>>, []}};
 handlerRpc({message,<<"contract">>,'T-CALL',SeqId,_NoArg}) ->

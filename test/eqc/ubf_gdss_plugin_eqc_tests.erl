@@ -1,4 +1,4 @@
-%%% Copyright: (c) 2008-2011 Gemini Mobile Technologies, Inc.  All rights reserved.
+%%% Copyright: (c) 2008-2013 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@
 
 -include("ubf_gdss_plugin.hrl").
 
--export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
+%% DISABLE -export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
+-export([run/0, run/1, run_parallel/0, run_parallel/1]).
 -export([sample_commands/0, sample_commands/1, prop_commands/0, prop_commands/1]).
 -export([counterexample_commands/0, counterexample_commands/1, counterexample_commands/2]).
 -export([counterexample_commands_read/1, counterexample_commands_write/1, counterexample_commands_write/2]).
@@ -78,8 +79,8 @@ join(Parts) ->
 %%%----------------------------------------------------------------------
 
 %% run from eunit
-eunit_test_() ->
-    gmt_eqc:eunit_module(?MODULE, 5).
+%% DISABLE eunit_test_() ->
+%% DISABLE    gmt_eqc:eunit_module(?MODULE, 5).
 
 run() ->
     run(500).
@@ -98,14 +99,14 @@ sample_commands() ->
     sample_commands([]).
 
 sample_commands(Options) ->
-    gmt_eqc_ubf:ubf_sample_commands(?MODULE, ?GDSS_PLUGINS, Options).
+    qc_ubf:ubf_sample_commands(?MODULE, ?GDSS_PLUGINS, Options).
 
 %% prop commands
 prop_commands() ->
     prop_commands([]).
 
 prop_commands(Options) ->
-    gmt_eqc_ubf:ubf_run_commands(?MODULE, ?GDSS_PLUGINS, Options).
+    qc_ubf:ubf_run_commands(?MODULE, ?GDSS_PLUGINS, Options).
 
 %% counterexample commands
 counterexample_commands() ->
@@ -130,7 +131,7 @@ counterexample_commands_write(FileName, CounterExample) ->
     file:write_file(FileName, io_lib:format("~p.", [CounterExample])).
 
 %%%----------------------------------------------------------------------
-%%% CALLBACKS - gmt_eqc_ubf1
+%%% CALLBACKS - eqc_ubf1
 %%%----------------------------------------------------------------------
 
 %% (S::symbolic_state(),Contracts::list(atom())) -> atom()

@@ -1,7 +1,7 @@
 %%% -*- mode: erlang -*-
 
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2008-2011 Gemini Mobile Technologies, Inc.  All rights reserved.
+%%% Copyright (c) 2008-2013 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 {application, gdss_ubf_proto,
  [
   {description, "Gemini Distributed Storage Service UBF Protocol Server"},
-  {vsn, "0.1.6"},
+  {vsn, "0.1.8.1"},
   {registered, []},
   {applications, [kernel, stdlib, sasl, gdss_client]},
   {mod, {gdss_ubf_proto, []}},
@@ -33,47 +33,33 @@
              , ubf_gdss_plugin
              , ubf_gdss_stub_plugin
             ]},
-  {env, [{gdss_ebf_maxconn, 10000}
-         , {gdss_ebf_process_options, []}
-         , {gdss_ebf_tcp_port, 7580}
-         , {gdss_ebf_timeout, 60000}
-         , {gdss_jsf_maxconn, 10000}
-         , {gdss_jsf_process_options, []}
-         , {gdss_jsf_tcp_port, 7582}
-         , {gdss_jsf_timeout, 60000}
+
+  {env, [%% Hibari Thrift protocol server
+         {gdss_tbf_tcp_port, 7600}
          , {gdss_tbf_maxconn, 10000}
          , {gdss_tbf_process_options, []}
-         , {gdss_tbf_tcp_port, 7600}
          , {gdss_tbf_timeout, 60000}
+         %% Hibari UBF protocol server
+         , {gdss_ubf_tcp_port, 7581}
          , {gdss_ubf_maxconn, 10000}
          , {gdss_ubf_process_options, []}
-         , {gdss_ubf_tcp_port, 7581}
          , {gdss_ubf_timeout, 60000}
+         %% Hibari EBF protocol server
+         , {gdss_ebf_tcp_port, 7580}
+         , {gdss_ebf_maxconn, 10000}
+         , {gdss_ebf_process_options, []}
+         , {gdss_ebf_timeout, 60000}
+         %% Hibari JSON-RPC protocol server
+         %% (Disabled, Requires ../lib/ubf_jsonrpc)
+         , {gdss_jsf_tcp_port,    0}  %% default: 7582
+         , {gdss_jsf_maxconn, 10000}
+         , {gdss_jsf_process_options, []}
+         , {gdss_jsf_timeout, 60000}
         ]}
-  %%
-  %% gdss_ebf_maxconn
-  %%   TODO
-  %%
-  %% gdss_ebf_process_options
-  %%   TODO
-  %%
-  %% gdss_ebf_tcp_port
-  %%   TCP port for the Hibari EBF protocol server.
-  %%
-  %% gdss_ebf_timeout
-  %%   ebf conection idle timer (msec)
-  %%
-  %% gdss_jsf_maxconn
-  %%   TODO
-  %%
-  %% gdss_jsf_process_options
-  %%   TODO
-  %%
-  %% gdss_jsf_tcp_port
-  %%   TODO
-  %%
-  %% gdss_jsf_timeout
-  %%   jsf conection idle timer (msec)
+
+  %% gdss_tbf_tcp_port
+  %%   TCP port for the Hibari Thrift protocol server.
+  %%   Set 0 to disable
   %%
   %% gdss_tbf_maxconn
   %%   TODO
@@ -81,11 +67,12 @@
   %% gdss_tbf_process_options
   %%   TODO
   %%
-  %% gdss_tbf_tcp_port
-  %%   TODO
-  %%
   %% gdss_tbf_timeout
   %%   tbf conection idle timer (msec)
+
+  %% gdss_ubf_tcp_port
+  %%   TCP port for the Hibari UBF protocol server.
+  %%   Set 0 to disable
   %%
   %% gdss_ubf_maxconn
   %%   TODO
@@ -93,10 +80,33 @@
   %% gdss_ubf_process_options
   %%   TODO
   %%
-  %% gdss_ubf_tcp_port
-  %%   TODO
-  %%
   %% gdss_ubf_timeout
   %%   ubf conection idle timer (msec)
+
+  %% gdss_ebf_tcp_port
+  %%   TCP port for the Hibari EBF protocol server.
+  %%   Set 0 to disable
   %%
+  %% gdss_ebf_maxconn
+  %%   TODO
+  %%
+  %% gdss_ebf_process_options
+  %%   TODO
+  %%
+  %% gdss_ebf_timeout
+  %%   ebf conection idle timer (msec)
+
+  %% gdss_jsf_tcp_port
+  %%   TCP port for the Hibari JSON-RPC protocol server.
+  %%   Set 0 to disable
+  %%
+  %% gdss_jsf_maxconn
+  %%   TODO
+  %%
+  %% gdss_jsf_process_options
+  %%   TODO
+  %%
+  %% gdss_jsf_timeout
+  %%   jsf conection idle timer (msec)
+
  ]}.
