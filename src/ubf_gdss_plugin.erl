@@ -63,6 +63,8 @@ handlerRpc({replace, Table, Key, Val, ExpTime, Flags, Timeout}) ->
     brick_simple:replace(Table, Key, Val, ExpTime, Flags, Timeout);
 handlerRpc({set, Table, Key, Val, ExpTime, Flags, Timeout}) ->
     brick_simple:set(Table, Key, Val, ExpTime, Flags, Timeout);
+handlerRpc({rename, Table, Key, NewKey, ExpTime, Flags, Timeout}) ->
+    brick_simple:rename(Table, Key, NewKey, ExpTime, Flags, Timeout);
 handlerRpc({delete, Table, Key, Flags, Timeout}) ->
     brick_simple:delete(Table, Key, Flags, Timeout);
 handlerRpc({get, Table, Key, Flags, Timeout}) ->

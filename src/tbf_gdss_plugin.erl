@@ -272,7 +272,7 @@ add(_) ->
 add(Table, Key, Value) ->
     StartTime = erlang:now(),
     case catch brick_simple:add(Table, Key, Value) of
-        ok ->
+        {ok, _} ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {key_exists, _} ->
@@ -303,7 +303,7 @@ replace(_) ->
 replace(Table, Key, Value) ->
     StartTime = erlang:now(),
     case catch brick_simple:replace(Table, Key, Value) of
-        ok ->
+        {ok, _} ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         key_not_exist ->
@@ -333,7 +333,7 @@ set(_) ->
 set(Table, Key, Value) ->
     StartTime = erlang:now(),
     case catch brick_simple:set(Table, Key, Value) of
-        ok ->
+        {ok, _} ->
             {ok, timer:now_diff(erlang:now(), StartTime)};
 
         {ts_error, _} ->
