@@ -55,6 +55,8 @@ do_op_flag()      = %% Section: Sent by client, should not be sent by server.
                     must_exist |
                     must_not_exist |
                     value_in_ram |
+                    {exp_time_directive, keep | replace} |
+                    {attrib_directive, keep | replace} |
                     %% Section: Sent by server, should not be sent by
                     %% client.
                     %%
