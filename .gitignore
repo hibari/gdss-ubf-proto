@@ -5,4 +5,5 @@
 *.log
 *.script
 .eunit/
+.qc
 erl_crash.dump
