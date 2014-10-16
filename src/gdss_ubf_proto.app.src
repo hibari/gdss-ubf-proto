@@ -21,7 +21,9 @@
 
 {application, gdss_ubf_proto,
  [
-  {description, "Gemini Distributed Storage Service UBF Protocol Server"},
+  %% NOTE: GDSS stands for Gemini Distributed Storage Service, which is
+  %%       the predecessor of Hibari
+  {description, "Hibari UBF Protocol Server"},
   {vsn, "0.3.0"},
   {registered, []},
   {applications, [kernel, stdlib, sasl, gdss_client]},
