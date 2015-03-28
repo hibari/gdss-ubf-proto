@@ -21,78 +21,77 @@
 
 +NAME("gdss").
 
-+VSN("tbf1.0").
++VSN("tbf2.0").
 
 +TYPES
 
-boolean()         = true | false;
-is_witness()      = boolean();
-key()             = binary();
-must_exist()      = boolean();
-name()            = binary();
-null()            = binary();
-seqid()           = integer();
-table()           = binary();
-timestamp()       = integer();
-val()             = binary();
-what()            = integer();
-why()             = binary();
+is_witness()      :: boolean();
+key()             :: binary();
+must_exist()      :: boolean();
+name()            :: binary();
+null()            :: binary();
+seqid()           :: integer();
+table()           :: binary();
+timestamp()       :: integer();
+val()             :: binary();
+what()            :: integer();
+why()             :: binary();
 
-info()            = binary();
-description()     = binary();
-contract()        = binary();
+info()            :: binary();
+description()     :: binary();
+contract()        :: binary();
 
-field_is_witness()= {field, name(), 'T-BOOL', 3, is_witness()};
-field_key()       = {field, name(), 'T-BINARY', 2, key()};
-field_must_exist()= {field, name(), 'T-BOOL', 3, must_exist()};
-field_table()     = {field, name(), 'T-BINARY', 1, table()};
-field_timestamp() = {field, name(), 'T-I64', 1, timestamp()};
-field_val()       = {field, name(), 'T-BINARY', 3, val()};
-field_what()      = {field, name(), 'T-I32', 2, what()};
-field_why()       = {field, name(), 'T-BINARY', 3, why()};
+field_is_witness():: {field, name(), 'T-BOOL', 3, is_witness()};
+field_key()       :: {field, name(), 'T-BINARY', 2, key()};
+field_must_exist():: {field, name(), 'T-BOOL', 3, must_exist()};
+field_table()     :: {field, name(), 'T-BINARY', 1, table()};
+field_timestamp() :: {field, name(), 'T-I64', 1, timestamp()};
+field_val()       :: {field, name(), 'T-BINARY', 3, val()};
+field_what()      :: {field, name(), 'T-I32', 2, what()};
+field_why()       :: {field, name(), 'T-BINARY', 3, why()};
 
-gen_in()          = add() | replace() | set() | delete() | get();
-gen_string()      = info() | description() | contract();
-gen_out()         = {struct, name(), [field_timestamp() | field_key() | field_val()]};
-gen_exc()         = {struct, name(), [field_timestamp() | field_what() | field_why()]};
-gen_null()        = {struct, null(), []};
+gen_in()          :: add() | replace() | set() | delete() | get();
+gen_string()      :: info() | description() | contract();
+gen_out()         :: {struct, name(), [field_timestamp() | field_key() | field_val()]};
+gen_exc()         :: {struct, name(), [field_timestamp() | field_what() | field_why()]};
+gen_null()        :: {struct, null(), []};
 
-gen_param_str()   = {field, null(), 'T-BINARY', 0, gen_string()};
-gen_param_0()     = {field, null(), 'T-STRUCT', 0, gen_out()};
-gen_param_1()     = {field, null(), 'T-STRUCT', 1, gen_in() | gen_exc()};
-gen_params()      = {struct, null(), [gen_param_str() | gen_param_0() | gen_param_1()]};
+gen_param_str()   :: {field, null(), 'T-BINARY', 0, gen_string()};
+gen_param_0()     :: {field, null(), 'T-STRUCT', 0, gen_out()};
+gen_param_1()     :: {field, null(), 'T-STRUCT', 1, gen_in() | gen_exc()};
+gen_params()      :: {struct, null(), [gen_param_str() | gen_param_0() | gen_param_1()]};
 
-add()             = {struct, name(), [field_table() | field_key() | field_val()]};
-add_req()         = {message, <<"Add">>, 'T-CALL', seqid(), gen_params()};
-add_res()         = {message, <<"Add">>, 'T-REPLY', seqid(), gen_params()};
+add()             :: {struct, name(), [field_table() | field_key() | field_val()]};
+add_req()         :: {message, <<"Add">>, 'T-CALL', seqid(), gen_params()};
+add_res()         :: {message, <<"Add">>, 'T-REPLY', seqid(), gen_params()};
 
-replace()         = {struct, name(), [field_table() | field_key() | field_val()]};
-replace_req()     = {message, <<"Replace">>, 'T-CALL', seqid(), gen_params()};
-replace_res()     = {message, <<"Replace">>, 'T-REPLY', seqid(), gen_params()};
+replace()         :: {struct, name(), [field_table() | field_key() | field_val()]};
+replace_req()     :: {message, <<"Replace">>, 'T-CALL', seqid(), gen_params()};
+replace_res()     :: {message, <<"Replace">>, 'T-REPLY', seqid(), gen_params()};
 
-set()             = {struct, name(), [field_table() | field_key() | field_val()]};
-set_req()         = {message, <<"Set">>, 'T-CALL', seqid(), gen_params()};
-set_res()         = {message, <<"Set">>, 'T-REPLY', seqid(), gen_params()};
+set()             :: {struct, name(), [field_table() | field_key() | field_val()]};
+set_req()         :: {message, <<"Set">>, 'T-CALL', seqid(), gen_params()};
+set_res()         :: {message, <<"Set">>, 'T-REPLY', seqid(), gen_params()};
 
-delete()          = {struct, name(), [field_table() | field_key() | field_must_exist()]};
-delete_req()      = {message, <<"Delete">>, 'T-CALL', seqid(), gen_params()};
-delete_res()      = {message, <<"Delete">>, 'T-REPLY', seqid(), gen_params()};
+delete()          :: {struct, name(), [field_table() | field_key() | field_must_exist()]};
+delete_req()      :: {message, <<"Delete">>, 'T-CALL', seqid(), gen_params()};
+delete_res()      :: {message, <<"Delete">>, 'T-REPLY', seqid(), gen_params()};
 
-get()             = {struct, name(), [field_table() | field_key() | field_is_witness()]};
-get_req()         = {message, <<"Get">>, 'T-CALL', seqid(), gen_params()};
-get_res()         = {message, <<"Get">>, 'T-REPLY', seqid(), gen_params()};
+get()             :: {struct, name(), [field_table() | field_key() | field_is_witness()]};
+get_req()         :: {message, <<"Get">>, 'T-CALL', seqid(), gen_params()};
+get_res()         :: {message, <<"Get">>, 'T-REPLY', seqid(), gen_params()};
 
-keepalive_req()   = {message, <<"keepalive">>, 'T-CALL', seqid(), gen_null()};
-keepalive_res()   = {message, <<"keepalive">>, 'T-REPLY', seqid(), gen_null()};
+keepalive_req()   :: {message, <<"keepalive">>, 'T-CALL', seqid(), gen_null()};
+keepalive_res()   :: {message, <<"keepalive">>, 'T-REPLY', seqid(), gen_null()};
 
-info_req()        = {message, <<"info">>, 'T-CALL', seqid(), gen_null()};
-info_res()        = {message, <<"info">>, 'T-REPLY', seqid(), gen_params()};
+info_req()        :: {message, <<"info">>, 'T-CALL', seqid(), gen_null()};
+info_res()        :: {message, <<"info">>, 'T-REPLY', seqid(), gen_params()};
 
-description_req() = {message, <<"description">>, 'T-CALL', seqid(), gen_null()};
-description_res() = {message, <<"description">>, 'T-REPLY', seqid(), gen_params()};
+description_req() :: {message, <<"description">>, 'T-CALL', seqid(), gen_null()};
+description_res() :: {message, <<"description">>, 'T-REPLY', seqid(), gen_params()};
 
-contract_req()    = {message, <<"contract">>, 'T-CALL', seqid(), gen_null()};
-contract_res()    = {message, <<"contract">>, 'T-REPLY', seqid(), gen_params()}.
+contract_req()    :: {message, <<"contract">>, 'T-CALL', seqid(), gen_null()};
+contract_res()    :: {message, <<"contract">>, 'T-REPLY', seqid(), gen_params()}.
 
 
 +ANYSTATE

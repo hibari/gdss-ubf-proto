@@ -21,11 +21,11 @@
 
 +NAME("gdss_stub").
 
-+VSN("ubf1.0").
++VSN("ubf2.0").
 
 +TYPES
-not_implemented() = not_implemented;
-do_res_or_not_implemented() = do_res() | not_implemented().
+not_implemented() :: not_implemented;
+do_res_or_not_implemented() :: do_res() | not_implemented().
 
 +ANYSTATE
 %% General API
