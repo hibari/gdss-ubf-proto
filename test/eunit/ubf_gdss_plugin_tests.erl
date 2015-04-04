@@ -31,6 +31,8 @@
 -define(S(X),
         #'#S'{value=X}).
 
+-define(TIMEOUT, 1000).
+
 %%%----------------------------------------------------------------------
 %%% TESTS
 %%%----------------------------------------------------------------------
@@ -57,9 +59,11 @@ all_tests_(Setup,Teardown) ->
 
 all_actual_tests_(Service,ServerId,Proto) ->
     fun (_) ->
-            [?_test(test_get_add_set(Service,ServerId,Proto))
-             , ?_test(test_simplified(Service,ServerId,Proto))
-             , ?_test(test_status(Service,ServerId,Proto))
+            [?_test(test_get_add_set(Service, ServerId, Proto)),
+             ?_test(test_simplified(Service, ServerId, Proto)),
+             ?_test(test_simple_replace1(Service, ServerId, Proto)),
+             ?_test(test_simple_rename1(Service, ServerId, Proto)),
+             ?_test(test_status(Service, ServerId, Proto))
             ]
     end.
 
@@ -97,12 +101,12 @@ client_connect(Service,ServerId,erl,Timeout) ->
     Pid.
 
 client_rpc(Pid,Args) ->
-    client_rpc(Pid,Args,infinity).
+    client_rpc(Pid, Args, infinity).
 
-client_rpc(Pid,Args,Timeout) ->
-    RPCReply = ubf_client:rpc(Pid,Args,Timeout),
+client_rpc(Pid, Args, Timeout) ->
+    RPCReply = ubf_client:rpc(Pid, Args, Timeout),
     case RPCReply of
-        {reply,Reply,none} ->
+        {reply, Reply, none} ->
             Reply;
         timeout ->
             timeout
@@ -112,77 +116,180 @@ client_stop(Pid) ->
     ubf_client:stop(Pid).
 
 
-test_get_add_set(Service,ServerId,Proto) ->
+test_get_add_set(Service, ServerId, Proto) ->
     ubf_gdss_eunit_utils:simple_soft_reset(),
 
     Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
     %% get - ng
-    [key_not_exist] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
+    [key_not_exist] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], ?TIMEOUT}),
 
     %% add - ok
-    [{ok, 1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], 1000}),
+    [{ok, 1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], ?TIMEOUT}),
     %% add - ng
-    [{key_exists,1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], 1000}),
+    [{key_exists,1}] = client_rpc(Pid,{do, a, [{add, <<"foo">>, 1, <<"bar">>, 0, []}], [], ?TIMEOUT}),
     %% get - ok
-    [{ok,1,<<"bar">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
+    [{ok,1,<<"bar">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], ?TIMEOUT}),
 
     %% set - ok
-    [{ok, 2}] = client_rpc(Pid,{do, a, [{set, <<"foo">>, 2, <<"baz">>, 0, []}], [], 1000}),
+    [{ok, 2}] = client_rpc(Pid,{do, a, [{set, <<"foo">>, 2, <<"baz">>, 0, []}], [], ?TIMEOUT}),
     %% get - ok
-    [{ok, 2, <<"baz">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
+    [{ok, 2, <<"baz">>}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], ?TIMEOUT}),
 
     ok = client_stop(Pid),
     ok.
 
-test_simplified(Service,ServerId,Proto) ->
+test_simplified(Service, ServerId, Proto) ->
     ubf_gdss_eunit_utils:simple_soft_reset(),
 
     Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
     %% get - ng
-    key_not_exist = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
+    key_not_exist = client_rpc(Pid,{get, a, <<"foo">>, [], ?TIMEOUT}),
 
     %% add - ok
-    {ok, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], ?TIMEOUT}),
     %% add - ng
-    {key_exists, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {key_exists, _} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], ?TIMEOUT}),
     %% get - ok
-    {ok, _, <<"bar">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
+    {ok, _, <<"bar">>} = client_rpc(Pid,{get, a, <<"foo">>, [], ?TIMEOUT}),
 
     %% set - ok
-    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], ?TIMEOUT}),
     %% get - ok
-    {ok, _, <<"baz">>} = client_rpc(Pid,{get, a, <<"foo">>, [], 1000}),
+    {ok, _, <<"baz">>} = client_rpc(Pid,{get, a, <<"foo">>, [], ?TIMEOUT}),
 
-    {ok, _} = client_rpc(Pid,{replace, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
-    key_not_exist = client_rpc(Pid,{replace, a, <<"foo-not-exist">>, <<"baz">>, 0, [], 1000}),
+    {ok, _} = client_rpc(Pid,{replace, a, <<"foo">>, <<"baz">>, 0, [], ?TIMEOUT}),
+    key_not_exist = client_rpc(Pid,{replace, a, <<"foo-not-exist">>, <<"baz">>, 0, [], ?TIMEOUT}),
 
-    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], 1000}),
-    {ok, _} = client_rpc(Pid,{set, a, <<"bar">>, <<"baz">>, 0, [], 1000}),
-    {ok, _} = client_rpc(Pid,{set, a, <<"baz">>, <<"baz">>, 0, [], 1000}),
-    {ok, {[_,_], true}} = client_rpc(Pid,{get_many, a, <<"">>, 2, [], 1000}),
-    {ok, {[_,_,_], false}} = client_rpc(Pid,{get_many, a, <<"">>, 3, [], 1000}),
-    {ok, {[], false}} = client_rpc(Pid,{get_many, a, <<"zzzz">>, 99, [], 1000}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"foo">>, <<"baz">>, 0, [], ?TIMEOUT}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"bar">>, <<"baz">>, 0, [], ?TIMEOUT}),
+    {ok, _} = client_rpc(Pid,{set, a, <<"baz">>, <<"baz">>, 0, [], ?TIMEOUT}),
+    {ok, {[_,_], true}} = client_rpc(Pid,{get_many, a, <<"">>, 2, [], ?TIMEOUT}),
+    {ok, {[_,_,_], false}} = client_rpc(Pid,{get_many, a, <<"">>, 3, [], ?TIMEOUT}),
+    {ok, {[], false}} = client_rpc(Pid,{get_many, a, <<"zzzz">>, 99, [], ?TIMEOUT}),
 
-    ok = client_rpc(Pid,{delete, a, <<"foo">>, [], 1000}),
-    key_not_exist = client_rpc(Pid,{delete, a, <<"foo">>, [], 1000}),
-    ok = client_rpc(Pid,{delete, a, <<"bar">>, [], 1000}),
-    ok = client_rpc(Pid,{delete, a, <<"baz">>, [], 1000}),
+    ok = client_rpc(Pid,{delete, a, <<"foo">>, [], ?TIMEOUT}),
+    key_not_exist = client_rpc(Pid,{delete, a, <<"foo">>, [], ?TIMEOUT}),
+    ok = client_rpc(Pid,{delete, a, <<"bar">>, [], ?TIMEOUT}),
+    ok = client_rpc(Pid,{delete, a, <<"baz">>, [], ?TIMEOUT}),
 
     ok = client_stop(Pid),
     ok.
 
-test_status(Service,ServerId,Proto) ->
+%% @doc test exp_time_directive and attrib_directive in replace operation
+test_simple_replace1(Service, ServerId, Proto) ->
+    ubf_gdss_eunit_utils:simple_soft_reset(),
+
+    Pid = client_connect(Service, ServerId, Proto),
+    ok = client_rpc(Pid, keepalive),
+
+    Table  = a,
+
+    KeyPrefix = <<"/100/1">>,
+    Key    = <<"/100/1/A">>,
+
+    ValA   = <<"AAA">>,
+    ExpA   = make_exp(5000 * 1000),
+    FlagsA = [{color, blue}],
+
+    ValB   = <<"BBB">>,
+    ExpB   = make_exp(360 * 1000),
+    FlagsB = [{shape, triangle}],
+
+    ValC   = <<"CCC">>,
+    FlagsC = [{color, green}, {exp_time_directive, keep}, {attrib_directive, keep}],
+
+    %% reset
+    _ = client_rpc(Pid, {delete, Table, Key, [], ?TIMEOUT}),
+
+    %% add KeyA
+    {ok, _} = client_rpc(Pid, {add, Table, Key, ValA, ExpA, FlagsA, ?TIMEOUT}),
+
+    %% get_many
+    {ok, {[{Key, _TS1, ValA, ExpA, Flags1}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    blue = proplists:get_value(color, Flags1),
+
+    %% replace KeyA
+    {ok, _} = client_rpc(Pid, {replace, Table, Key, ValB, ExpB, FlagsB, ?TIMEOUT}),
+    {ok, {[{Key, _TS2, ValB, ExpB, Flags2}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    undefined = proplists:get_value(color, Flags2),
+    triangle = proplists:get_value(shape, Flags2),
+
+    %% replace KeyA again
+    {ok, _} = client_rpc(Pid, {replace, Table, Key, ValC, 0, FlagsC, ?TIMEOUT}),
+    {ok, {[{Key, _TS3, ValC, ExpB, Flags3}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    green = proplists:get_value(color, Flags3),
+    triangle = proplists:get_value(shape, Flags3).
+
+%% @doc test exp_time_directive and attrib_directive in rename operation
+test_simple_rename1(Service, ServerId, Proto) ->
+    ubf_gdss_eunit_utils:simple_soft_reset(),
+
+    Pid = client_connect(Service, ServerId, Proto),
+    ok = client_rpc(Pid, keepalive),
+
+    Table  = a,
+    KeyPrefix = <<"/100/1">>,
+
+    KeyA   = <<"/100/1/A">>,
+    Val    = <<"AAA">>,
+    ExpA   = make_exp(5000 * 1000),
+    FlagsA = [{color, blue}],
+
+    KeyB   = <<"/100/1/B">>,
+    ExpB   = make_exp(360 * 1000),
+    FlagsB = [{shape, triangle}, {exp_time_directive, replace}, {attrib_directive, replace}],
+
+    KeyC   = <<"/100/1/C">>,
+    FlagsC = [{color, green}],
+
+    %% reset
+    _ = client_rpc(Pid, {delete, Table, KeyA, [], ?TIMEOUT}),
+    _ = client_rpc(Pid, {delete, Table, KeyB, [], ?TIMEOUT}),
+    _ = client_rpc(Pid, {delete, Table, KeyC, [], ?TIMEOUT}),
+
+    %% add KeyA
+    {ok, _} = client_rpc(Pid, {add, Table, KeyA, Val, ExpA, FlagsA, ?TIMEOUT}),
+
+    %% get_many
+    {ok, {[{KeyA, _TS1, Val, ExpA, Flags1}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    blue = proplists:get_value(color, Flags1),
+
+    %% rename KeyA to KeyB
+    {ok, _} = client_rpc(Pid, {rename, Table, KeyA, KeyB, ExpB, FlagsB, ?TIMEOUT}),
+    {ok, {[{KeyB, _TS2, Val, ExpB, Flags2}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    undefined = proplists:get_value(color, Flags2),
+    triangle = proplists:get_value(shape, Flags2),
+
+    %% rename KeyB to KeyC
+    {ok, _} = client_rpc(Pid, {rename, Table, KeyB, KeyC, 0, FlagsC, ?TIMEOUT}),
+    {ok, {[{KeyC, _TS3, Val, ExpB, Flags3}], false}} =
+        client_rpc(Pid, {get_many, Table, KeyPrefix, 100, [get_all_attribs], ?TIMEOUT}),
+    green = proplists:get_value(color, Flags3),
+    triangle = proplists:get_value(shape, Flags3).
+
+test_status(Service, ServerId, Proto) ->
     ubf_gdss_eunit_utils:simple_soft_reset(),
 
     Pid = client_connect(Service,ServerId,Proto),
     ok = client_rpc(Pid,keepalive),
 
-    {ok, _} = client_rpc(Pid, {brick_status, a_ch1_b1, node(), 1000}),
-    noproc = client_rpc(Pid, {brick_status, does_not_exist, node(), 1000}),
+    {ok, _} = client_rpc(Pid, {brick_status, a_ch1_b1, node(), ?TIMEOUT}),
+    noproc = client_rpc(Pid, {brick_status, does_not_exist, node(), ?TIMEOUT}),
 
     ok = client_stop(Pid),
     ok.
+
+-spec make_exp(non_neg_integer()) -> exp_time().
+make_exp(StepMillis) ->
+    {MSec, Sec, USec} = now(),
+    NowX = (MSec * 1000000 * 1000000) + (Sec * 1000000) + USec,
+    (NowX * 1000) + StepMillis.
