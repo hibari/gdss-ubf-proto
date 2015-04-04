@@ -23,6 +23,13 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("ubf_gdss_plugin.hrl").
 
+%% @doc ubf string record
+-record('#S',
+        {value="" :: string()}).
+
+%% @doc ubf string helper
+-define(S(X),
+        #'#S'{value=X}).
 
 %%%----------------------------------------------------------------------
 %%% TESTS

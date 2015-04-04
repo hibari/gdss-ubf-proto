@@ -77,13 +77,15 @@ ts()              :: integer();
 
 %% All primitive ops are bundled in a do_op_list().  I may also expose
 %% individual get/delete/set/etc. ops w/o txn support.
+%% Prefix "z_" is required to avoid a type spec warning.
+%% See: https://github.com/ubf/ubf/issues/13
 
-do1_op()          :: add() | delete() | get() | get_many() | replace() | set() | rename();
+z_do1_op()        :: add() | delete() | get() | get_many() | replace() | set() | rename();
 
 %% Syntax note: [foo]? ++ List means foo appears 0 or 1 time at front of List.
-%%   do_op_list()      :: [txn()]? ++ [do1_op()];
+%%   do_op_list()      :: [txn()]? ++ [z_do1_op()];
 %% @todo temporary workaround for BUG 24628
-do_op_list()      :: [txn() | do1_op()];
+do_op_list()      :: [txn() | z_do1_op()];
 
 do1_res_ok()      :: ok |
                      key_not_exist |

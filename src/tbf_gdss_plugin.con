@@ -50,7 +50,9 @@ field_val()       :: {field, name(), 'T-BINARY', 3, val()};
 field_what()      :: {field, name(), 'T-I32', 2, what()};
 field_why()       :: {field, name(), 'T-BINARY', 3, why()};
 
-gen_in()          :: add() | replace() | set() | delete() | get();
+%% Prefix "z_" is required to avoid a type spec warning.
+%% See: https://github.com/ubf/ubf/issues/13
+z_gen_in()        :: add() | replace() | set() | delete() | get();
 gen_string()      :: info() | description() | contract();
 gen_out()         :: {struct, name(), [field_timestamp() | field_key() | field_val()]};
 gen_exc()         :: {struct, name(), [field_timestamp() | field_what() | field_why()]};
@@ -58,7 +60,7 @@ gen_null()        :: {struct, null(), []};
 
 gen_param_str()   :: {field, null(), 'T-BINARY', 0, gen_string()};
 gen_param_0()     :: {field, null(), 'T-STRUCT', 0, gen_out()};
-gen_param_1()     :: {field, null(), 'T-STRUCT', 1, gen_in() | gen_exc()};
+gen_param_1()     :: {field, null(), 'T-STRUCT', 1, z_gen_in() | gen_exc()};
 gen_params()      :: {struct, null(), [gen_param_str() | gen_param_0() | gen_param_1()]};
 
 add()             :: {struct, name(), [field_table() | field_key() | field_val()]};

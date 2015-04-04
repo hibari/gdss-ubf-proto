@@ -20,7 +20,7 @@
 -module(tbf_gdss_plugin).
 -behaviour(ubf_plugin_stateless).
 
--include_lib("ubf/include/ubf.hrl").
+-include("tbf_gdss_plugin.hrl").
 -include("gmt_elog.hrl").
 
 %% Required callback API for all UBF contract implementations.

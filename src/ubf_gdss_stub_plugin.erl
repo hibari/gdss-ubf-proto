@@ -20,7 +20,7 @@
 -module(ubf_gdss_stub_plugin).
 -behaviour(ubf_plugin_stateless).
 
--include_lib("ubf/include/ubf.hrl").
+-include("ubf_gdss_stub_plugin.hrl").
 
 %% Required callback API for all UBF contract implementations.
 -export([info/0, description/0, keepalive/0]).
@@ -34,6 +34,13 @@
 -add_contract("./src/ubf_gdss_stub_plugin").
 -add_types(ubf_gdss_plugin).
 
+%% @doc ubf string record
+-record('#S',
+        {value="" :: string()}).
+
+%% @doc ubf string helper
+-define(S(X),
+        #'#S'{value=X}).
 
 info() ->
     "I am a stateless server".
