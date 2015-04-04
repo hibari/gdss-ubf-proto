@@ -35,6 +35,8 @@
 
 -include("ubf_gdss_plugin.hrl").
 
+-define(GDSS_PLUGINS, [ubf_gdss_plugin]).
+
 %% DISABLE -export([eunit_test_/0, run/0, run/1, run_parallel/0, run_parallel/1]).
 -export([run/0, run/1, run_parallel/0, run_parallel/1]).
 -export([sample_commands/0, sample_commands/1, prop_commands/0, prop_commands/1]).
