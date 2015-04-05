@@ -1,5 +1,5 @@
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2008-2013 Hibari developers.  All rights reserved.
+%%% Copyright (c) 2008-2015 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -18,17 +18,30 @@
 %%%----------------------------------------------------------------------
 
 -module(ubf_gdss_plugin).
+-behaviour(ubf_plugin_stateless).
 
--include("ubf.hrl").
+-include("ubf_gdss_plugin.hrl").
+
+%% Required callback API for all UBF contract implementations.
+-export([info/0, description/0, keepalive/0]).
+-export([moduleStart/1, moduleRestart/1]).
+-export([handlerStart/1, handlerStop/3, handlerRpc/1, handlerEvent/1]).
 
 -export([filter_bad_terms/1]).
--export([info/0, description/0, keepalive/0]).
--export([handlerStart/1, handlerStop/3, handlerRpc/1]).
+
+-import(ubf_plugin_handler, [sendEvent/2, install_handler/2]).
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
 -add_contract("./src/ubf_gdss_plugin").
 
+%% @doc ubf string record
+-record('#S',
+        {value="" :: string()}).
+
+%% @doc ubf string helper
+-define(S(X),
+        #'#S'{value=X}).
 
 info() ->
     "I am a stateless server".
@@ -39,11 +52,19 @@ description() ->
 keepalive() ->
     ok.
 
+%% @doc start module
+moduleStart(_Args) ->
+    unused.
+
+%% @doc restart module
+moduleRestart(Args) ->
+    moduleStart(Args).
 
 %% @spec handlerStart(Args::list(any())) ->
 %%          {accept, Reply::any(), StateName::atom(), StateData::term()} | {reject, Reason::any()}
 %% @doc start handler
 handlerStart(_Args) ->
+    ack = install_handler(self(), fun handlerEvent/1),
     {accept,ok,none,unused}.
 
 %% @spec handlerStop(Pid::pid(), Reason::any(), StateData::term()) -> void()
@@ -63,6 +84,8 @@ handlerRpc({replace, Table, Key, Val, ExpTime, Flags, Timeout}) ->
     brick_simple:replace(Table, Key, Val, ExpTime, Flags, Timeout);
 handlerRpc({set, Table, Key, Val, ExpTime, Flags, Timeout}) ->
     brick_simple:set(Table, Key, Val, ExpTime, Flags, Timeout);
+handlerRpc({rename, Table, Key, NewKey, ExpTime, Flags, Timeout}) ->
+    brick_simple:rename(Table, Key, NewKey, ExpTime, Flags, Timeout);
 handlerRpc({delete, Table, Key, Flags, Timeout}) ->
     brick_simple:delete(Table, Key, Flags, Timeout);
 handlerRpc({get, Table, Key, Flags, Timeout}) ->
@@ -85,6 +108,12 @@ handlerRpc(Event)
     ?MODULE:Event();
 handlerRpc(Event) ->
     {Event, not_implemented}.
+
+handlerEvent(Event) ->
+    %% @TODO add your own implementation here
+    %% Let's fake it and echo the request
+    sendEvent(self(), Event),
+    fun handlerEvent/1.
 
 filter_bad_terms(L) when is_list(L) ->
     my_map(fun(X) -> filter_bad_terms(X) end, L);

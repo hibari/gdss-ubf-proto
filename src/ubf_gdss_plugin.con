@@ -1,7 +1,7 @@
 %%% -*- mode: erlang -*-
 
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2009-2013 Hibari developers.  All rights reserved.
+%%% Copyright (c) 2009-2015 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 +NAME("gdss").
 
-+VSN("ubf1.0").
++VSN("ubf2.0").
 
 +TYPES
 
@@ -31,86 +31,91 @@
 %% and txn() should *not* appear in any position other than first.
 %%
 %% Read-only ops: get(), get_many()
-%% Update ops: add()/replace()/set(), delete()
+%% Update ops: add()/replace()/set(), rename(), delete()
 
-txn()             = txn;
-add()             = {add,      key(), ts(), val(), exp_time(), flags_list()};
-delete()          = {delete,   key(),                          flags_list()};
-get()             = {get,      key(),                          flags_list()};
-get_many()        = {get_many, key(),                          flags_list()};
-replace()         = {replace,  key(), ts(), val(), exp_time(), flags_list()};
-set()             = {set,      key(), ts(), val(), exp_time(), flags_list()};
+txn()             :: txn;
+add()             :: {add,      key(), ts(), val(), exp_time(), flags_list()};
+delete()          :: {delete,   key(),                          flags_list()};
+get()             :: {get,      key(),                          flags_list()};
+get_many()        :: {get_many, key(),                          flags_list()};
+replace()         :: {replace,  key(), ts(), val(), exp_time(), flags_list()};
+set()             :: {set,      key(), ts(), val(), exp_time(), flags_list()};
+rename()          :: {rename,   key(), ts(), key(), exp_time(), flags_list()};
 
 %% Types for primitive types
-do_op_flag()      = %% Section: Sent by client, should not be sent by server.
-                    %%
-                    {testset, ts()} |
-                    witness |
-                    get_all_attribs |
-                    %% Flags for get_many
-                    {max_bytes, integer()} |
-                    {max_num, integer()} |
-                    {binary_prefix, binary()} |
-                    must_exist |
-                    must_not_exist |
-                    value_in_ram |
-                    %% Section: Sent by server, should not be sent by
-                    %% client.
-                    %%
-                    {val_len, len()} |
-                    %% Section: Flags that pass through brick and are
-                    %% stored with key, same as an Erlang property
-                    %% list.
-                    %%
-                    {term(), term()} |
-                    atom();
-exp_time()        = time_t();
-flags_list()      = [do_op_flag()];
-key()             = binary();
-val()             = binary();
+do_op_flag()      :: %% Section: Sent by client, should not be sent by server.
+                     %%
+                     {testset, ts()} |
+                     witness |
+                     get_all_attribs |
+                     %% Flags for get_many
+                     {max_bytes, integer()} |
+                     {max_num, integer()} |
+                     {binary_prefix, binary()} |
+                     must_exist |
+                     must_not_exist |
+                     value_in_ram |
+                     {exp_time_directive, keep | replace} |
+                     {attrib_directive, keep | replace} |
+                     %% Section: Sent by server, should not be sent by
+                     %% client.
+                     %%
+                     {val_len, len()} |
+                     %% Section: Flags that pass through brick and are
+                     %% stored with key, same as an Erlang property
+                     %% list.
+                     %%
+                     {term(), term()} |
+                     atom();
+exp_time()        :: time_t();
+flags_list()      :: [do_op_flag()];
+key()             :: binary();
+val()             :: binary();
 %% ts = timestamp = usually an int64: time_t * 1000000 + usecs
-len()             = integer();
-ts()              = integer();
+len()             :: integer();
+ts()              :: integer();
 
 %% All primitive ops are bundled in a do_op_list().  I may also expose
 %% individual get/delete/set/etc. ops w/o txn support.
+%% Prefix "z_" is required to avoid a type spec warning.
+%% See: https://github.com/ubf/ubf/issues/13
 
-do1_op()          = add() | delete() | get() | get_many() | replace() | set();
+z_do1_op()        :: add() | delete() | get() | get_many() | replace() | set() | rename();
 
 %% Syntax note: [foo]? ++ List means foo appears 0 or 1 time at front of List.
-%%   do_op_list()      = [txn()]? ++ [do1_op()];
+%%   do_op_list()      :: [txn()]? ++ [z_do1_op()];
 %% @todo temporary workaround for BUG 24628
-do_op_list()      = [txn() | do1_op()];
+do_op_list()      :: [txn() | z_do1_op()];
 
-do1_res_ok()      = ok |
-                    key_not_exist |
-                    {ok, val()} |
-                    {ok, ts()} |
-                    {ok, ts(), val()} |
-                    {ok, ts(), flags_list()} |
-                    {ok, ts(), val(), time_t(), flags_list()} |
-                    {ok, {[{key(), ts()}], boolean()}} |
-                    {ok, {[{key(), ts(), flags_list()}], boolean()}} |
-                    {ok, {[{key(), ts(), val(), time_t(), flags_list()}], boolean()}} |
-                    %% The 'txn' atom is present only because of
-                    %% QuickCheck: a dumb generator may put 'txn'
-                    %% anywhere in the do_op_list().  Real users must
-                    %% take greater care when sending 'txn' (see
-                    %% above), and real users won't see 'txn' in their
-                    %% results.
-                    txn;
-do1_res_fail()    = {key_exists, ts()} |
-                    key_not_exist |
-                    {ts_error, ts()} |
-                    {val_error, len()} |
-                    invalid_flag_present |
-                    %% The responsible brick is
-                    %% unavailable/crashed/whatever.
-                    brick_not_available;
-do_res_fail()     = {txn_fail, [{integer(), do1_res_fail()}]};
+do1_res_ok()      :: ok |
+                     key_not_exist |
+                     {ok, ts()} |
+                     {ok, ts(), time_t(), flags_list()} |
+                     {ok, ts(), val()} |
+                     {ok, ts(), val(), time_t(), flags_list()} |
+                     {ok, {[{key(), ts()}], boolean()}} |
+                     {ok, {[{key(), ts(), time_t(), flags_list()}], boolean()}} |
+                     {ok, {[{key(), ts(), val()}], boolean()}} |
+                     {ok, {[{key(), ts(), val(), time_t(), flags_list()}], boolean()}} |
+                     %% The 'txn' atom is present only because of
+                     %% QuickCheck: a dumb generator may put 'txn'
+                     %% anywhere in the do_op_list().  Real users must
+                     %% take greater care when sending 'txn' (see
+                     %% above), and real users won't see 'txn' in their
+                     %% results.
+                     txn;
+do1_res_fail()    :: {key_exists, ts()} |
+                     key_not_exist |
+                     {ts_error, ts()} |
+                     {val_error, len()} |
+                     invalid_flag_present |
+                     %% The responsible brick is
+                     %% unavailable/crashed/whatever.
+                     brick_not_available;
+do_res_fail()     :: {txn_fail, [{integer(), do1_res_fail()}]};
 
-do_req()          = {do, table(), do_op_list(), do_flags_list(), timeout()};
-do_res()          = [do1_res_ok() | do1_res_fail()] | do_res_fail();
+do_req()          :: {do, table(), do_op_list(), do_flags_list(), timeout()};
+do_res()          :: [do1_res_ok() | do1_res_fail()] | do_res_fail();
 
 %% Simplified, single-key API ops
 %%
@@ -120,44 +125,45 @@ do_res()          = [do1_res_ok() | do1_res_fail()] | do_res_fail();
 %% example, 'ok' is not really a valid return value for a
 %% get_many_req() request.
 
-add_req()         = {add, table(),
-                     key(), val(), exp_time(), flags_list(), timeout()};
-delete_req()      = {delete, table(),
-                     key(),                    flags_list(), timeout()};
-get_req()         = {get, table(),
-                     key(),                    flags_list(), timeout()};
-get_many_req()    = {get_many, table(),
-                     key(),        integer(),  flags_list(), timeout()};
-replace_req()     = {replace, table(),
-                     key(), val(), exp_time(), flags_list(), timeout()};
-set_req()         = {set, table(),
-                     key(), val(), exp_time(), flags_list(), timeout()};
+add_req()         :: {add, table(),
+                      key(), val(), exp_time(), flags_list(), timeout()};
+delete_req()      :: {delete, table(),
+                      key(),                    flags_list(), timeout()};
+get_req()         :: {get, table(),
+                      key(),                    flags_list(), timeout()};
+get_many_req()    :: {get_many, table(),
+                      key(),        integer(),  flags_list(), timeout()};
+replace_req()     :: {replace, table(),
+                      key(), val(), exp_time(), flags_list(), timeout()};
+set_req()         :: {set, table(),
+                      key(), val(), exp_time(), flags_list(), timeout()};
+rename_req()      :: {rename, table(),
+                      key(), key(), exp_time(), flags_list(), timeout()};
 
-add_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
-delete_res()      = do1_res_ok() | do1_res_fail() | do_res_fail();
-get_many_res()    = do1_res_ok() | do1_res_fail() | do_res_fail();
-get_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
-replace_res()     = do1_res_ok() | do1_res_fail() | do_res_fail();
-set_res()         = do1_res_ok() | do1_res_fail() | do_res_fail();
+add_res()         :: do1_res_ok() | do1_res_fail() | do_res_fail();
+delete_res()      :: do1_res_ok() | do1_res_fail() | do_res_fail();
+get_many_res()    :: do1_res_ok() | do1_res_fail() | do_res_fail();
+get_res()         :: do1_res_ok() | do1_res_fail() | do_res_fail();
+replace_res()     :: do1_res_ok() | do1_res_fail() | do_res_fail();
+set_res()         :: do1_res_ok() | do1_res_fail() | do_res_fail();
+rename_res()      :: do1_res_ok() | do1_res_fail() | do_res_fail();
 
-brick_status_req() = {brick_status, atom(), atom(), timeout()};
-brick_status_res() = {ok, term()} | noproc;
+brick_status_req() :: {brick_status, atom(), atom(), timeout()};
+brick_status_res() :: {ok, term()} | noproc;
 
 %% Misc, in alphabetical order
-boolean()         = true | false;
-do_flags_list()   = [] | [sync_override];
-table()           = atom(nonempty,nonundefined);
-%% time_t = UNIX time_t value, 0..2^31
-time_t()          = integer();
-timeout()         = integer(); %% milliseconds
+do_flags_list()   :: [] | [sync_override];
+table()           :: atom(nonempty,nonundefined);
+%% time_t :: UNIX time_t value, 0..2^31
+time_t()          :: integer();
 
 %% Misc misc misc.
-keepalive_req()   = keepalive;
-keepalive_res()   = ok | {error,term()};
+keepalive_req()   :: keepalive;
+keepalive_res()   :: ok | {error,term()};
 
-contract()        = contract;
-description()     = description;
-info()            = info.
+contract()        :: contract;
+description()     :: description;
+info()            :: info.
 
 
 +ANYSTATE
@@ -171,6 +177,7 @@ get_many_req()  => get_many_res();
 get_req()       => get_res();
 replace_req()   => replace_res();
 set_req()       => set_res();
+rename_req()    => rename_res();
 
 %% Status API
 brick_status_req() => brick_status_res();

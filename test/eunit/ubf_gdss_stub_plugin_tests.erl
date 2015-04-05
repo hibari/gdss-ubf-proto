@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% Copyright (c) 2009-2013 Hibari developers.  All rights reserved.
+%%% Copyright (c) 2009-2015 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -23,6 +23,13 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("ubf_gdss_plugin.hrl").
 
+%% @doc ubf string record
+-record('#S',
+        {value="" :: string()}).
+
+%% @doc ubf string helper
+-define(S(X),
+        #'#S'{value=X}).
 
 %%%----------------------------------------------------------------------
 %%% TESTS
@@ -117,16 +124,16 @@ test_stub(Service,ServerId,Proto) ->
     [{ok,0,Binary}] = client_rpc(Pid,{do, a, [{get, <<"foo">>, []}], [], 1000}),
 
     %% add - ok
-    ok = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
-    ok = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{add, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
 
     %% replace - ok
-    ok = client_rpc(Pid,{replace, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
-    ok = client_rpc(Pid,{replace, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{replace, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{replace, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
 
     %% set - ok
-    ok = client_rpc(Pid,{set, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
-    ok = client_rpc(Pid,{set, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{set, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
+    {ok, 0} = client_rpc(Pid,{set, a, <<"foo">>, <<"bar">>, 0, [], 1000}),
 
     %% delete - ok
     ok = client_rpc(Pid,{delete, a, <<"foo">>, [], 1000}),

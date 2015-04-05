@@ -4,5 +4,14 @@
 *.huc
 *.log
 *.script
+.eqc-info
 .eunit/
+.qc/
+.rebar/
+deps/
+!ebin/
+ebin/*
+!ebin/tbf_gdss_plugin.hrl
+!ebin/ubf_gdss_plugin.hrl
+!ebin/ubf_gdss_stub_plugin.hrl
 erl_crash.dump

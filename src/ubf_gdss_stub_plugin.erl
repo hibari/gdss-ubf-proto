@@ -1,5 +1,5 @@
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2008-2013 Hibari developers.  All rights reserved.
+%%% Copyright (c) 2008-2015 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -18,16 +18,29 @@
 %%%----------------------------------------------------------------------
 
 -module(ubf_gdss_stub_plugin).
+-behaviour(ubf_plugin_stateless).
 
--include("ubf.hrl").
+-include("ubf_gdss_stub_plugin.hrl").
 
+%% Required callback API for all UBF contract implementations.
 -export([info/0, description/0, keepalive/0]).
--export([handlerStart/1, handlerStop/3, handlerRpc/1]).
+-export([moduleStart/1, moduleRestart/1]).
+-export([handlerStart/1, handlerStop/3, handlerRpc/1, handlerEvent/1]).
+
+-import(ubf_plugin_handler, [sendEvent/2, install_handler/2]).
 
 %% NOTE the following two lines
 -compile({parse_transform,contract_parser}).
 -add_contract("./src/ubf_gdss_stub_plugin").
 -add_types(ubf_gdss_plugin).
+
+%% @doc ubf string record
+-record('#S',
+        {value="" :: string()}).
+
+%% @doc ubf string helper
+-define(S(X),
+        #'#S'{value=X}).
 
 info() ->
     "I am a stateless server".
@@ -37,6 +50,14 @@ description() ->
 
 keepalive() ->
     ok.
+
+%% @doc start module
+moduleStart(_Args) ->
+    unused.
+
+%% @doc restart module
+moduleRestart(Args) ->
+    moduleStart(Args).
 
 
 %% @spec handlerStart(Args::list(any())) ->
@@ -62,6 +83,8 @@ handlerRpc({do, _Table, [{replace, _Key, _TStamp, _Val, _ExpTime, _EFlags}], _Fl
     [ok];
 handlerRpc({do, _Table, [{set, _Key, _TStamp, _Val, _ExpTime, _EFlags}], _Flags, _Timeout}) ->
     [ok];
+handlerRpc({do, _Table, [{rename, _Key, _TStamp, _NewKey, _ExpTime, _EFlags}], _Flags, _Timeout}) ->
+    [ok];
 handlerRpc({do, _Table, [{delete, _Key, _EFlags}], _Flags, _Timeout}) ->
     [ok];
 handlerRpc({do, _Table, [{get, _Key, _EFlags}], _Flags, _Timeout}) ->
@@ -69,11 +92,13 @@ handlerRpc({do, _Table, [{get, _Key, _EFlags}], _Flags, _Timeout}) ->
 handlerRpc({do, _Table, _Ops, _Flags, _Timeout}) ->
     not_implemented;
 handlerRpc({add, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
 handlerRpc({replace, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
 handlerRpc({set, _Table, _Key, _Val, _ExpTime, _Flags, _Timeout}) ->
-    ok;
+    {ok, 0};
+handlerRpc({rename, _Table, _Key, _NewKey, _ExpTime, _Flags, _Timeout}) ->
+    {ok, 0};
 handlerRpc({delete, _Table, _Key, _Flags, _Timeout}) ->
     ok;
 handlerRpc({get, _Table, _Key, _Flags, _Timeout}) ->
@@ -91,6 +116,11 @@ handlerRpc(Event)
 handlerRpc(Event) ->
     {Event, not_implemented}.
 
+handlerEvent(Event) ->
+    %% @TODO add your own implementation here
+    %% Let's fake it and echo the request
+    sendEvent(self(), Event),
+    fun handlerEvent/1.
 
 %%
 %% helpers

@@ -1,7 +1,7 @@
 %%% -*- mode: erlang -*-
 
 %%%----------------------------------------------------------------------
-%%% Copyright (c) 2009-2013 Hibari developers.  All rights reserved.
+%%% Copyright (c) 2009-2015 Hibari developers.  All rights reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@
 
 +NAME("gdss_stub").
 
-+VSN("ubf1.0").
++VSN("ubf2.0").
 
 +TYPES
-not_implemented() = not_implemented;
-do_res_or_not_implemented() = do_res() | not_implemented().
+not_implemented() :: not_implemented;
+do_res_or_not_implemented() :: do_res() | not_implemented().
 
 +ANYSTATE
 %% General API
@@ -38,6 +38,7 @@ get_many_req()  => not_implemented();
 get_req()       => get_res();
 replace_req()   => replace_res();
 set_req()       => set_res();
+rename_req()    => rename_res();
 
 %% Status API
 brick_status_req() => not_implemented();
