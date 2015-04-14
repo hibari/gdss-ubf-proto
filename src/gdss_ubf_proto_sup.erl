@@ -119,31 +119,7 @@ init(_Args) ->
                    [JSFServer]
            end,
 
-    %% NOTE: This server implements native Thrift Binary Format.
-    %% There is no need to have UBF over TBF listener except for test
-    %% purposes so it has been removed.
-    CTBF = case application:get_env(gdss_ubf_proto, gdss_tbf_tcp_port) of
-                {ok, 0} ->
-                    [];
-                {ok, TBFPort} ->
-                    {ok,TBFMaxConn} = application:get_env(gdss_ubf_proto, gdss_tbf_maxconn),
-                    {ok,TBFIdleTimer} = application:get_env(gdss_ubf_proto, gdss_tbf_timeout),
-                    {ok,TBFPOTerm} = application:get_env(gdss_ubf_proto, gdss_tbf_process_options),
-                    TBFProcessOptions = gmt_util:proplists_int_copy([], TBFPOTerm, [fullsweep_after, min_heap_size]),
-
-                    TBFOptions =
-                        [{serverhello, undefined}, {startplugin, tbf_gdss_plugin}, {statelessrpc,true},
-                         {proto,tbf}, {maxconn,TBFMaxConn},
-                         {idletimer,TBFIdleTimer}, {registeredname,gdss_tbf},
-                         {tlog_module,undefined}, {process_options,TBFProcessOptions}],
-                    TBFServer =
-                        {tbf_server, {ubf_server, start_link, [gdss_meta3, [tbf_gdss_plugin], gmt_util:node_localid_port(TBFPort), TBFOptions]},
-                         permanent, 2000, worker, [tbf_server]},
-
-                    [TBFServer]
-            end,
-
-    {ok, {{one_for_one, 2, 60}, CEBF ++ CUBF ++ CJSF ++ CTBF}}.
+    {ok, {{one_for_one, 2, 60}, CEBF ++ CUBF ++ CJSF}}.
 
 %%%----------------------------------------------------------------------
 %%% Internal functions
