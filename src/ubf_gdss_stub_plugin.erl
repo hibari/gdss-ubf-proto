@@ -42,6 +42,8 @@
 -define(S(X),
         #'#S'{value=X}).
 
+-define(TIME, gmt_time_otp18).
+
 info() ->
     "I am a stateless server".
 
@@ -148,7 +150,7 @@ get_cached_get_value(Size) ->
     Key = {?MODULE,cached_get_value,Size},
     case erlang:get(Key) of
         undefined ->
-            _ = random:seed(erlang:now()),
+            _ = r1andom:seed(?TIME:monotonic_time(), ?TIME:unique_integer(), ?TIME:time_offset()),
             Val = erlang:list_to_binary([ random:uniform(255) || _ <- lists:seq(1,Size) ]),
             erlang:put(Key, Val),
             Val;
