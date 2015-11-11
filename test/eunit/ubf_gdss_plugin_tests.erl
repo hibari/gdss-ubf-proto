@@ -290,6 +290,7 @@ test_status(Service, ServerId, Proto) ->
 
 -spec make_exp(non_neg_integer()) -> exp_time().
 make_exp(StepMillis) ->
-    {MSec, Sec, USec} = now(),
-    NowX = (MSec * 1000000 * 1000000) + (Sec * 1000000) + USec,
+    NowX = gmt_time_otp18:system_time(micro_seconds),
+    %% TODO: FIXME: This should read (NowX div 1000).
+    %% https://github.com/hibari/gdss-admin/issues/11
     (NowX * 1000) + StepMillis.
