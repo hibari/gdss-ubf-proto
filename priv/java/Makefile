@@ -1,5 +1,5 @@
 ###----------------------------------------------------------------------
-### Copyright (c) 2007-2015 Hibari developers.  All rights reserved.
+### Copyright (c) 2007-2016 Hibari developers.  All rights reserved.
 ###
 ### Licensed under the Apache License, Version 2.0 (the "License");
 ### you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 ### limitations under the License.
 ###
 ### File    : Makefile
-### Purpose : 
+### Purpose :
 ###----------------------------------------------------------------------
 
 UBF_CLASSES_DIR = ../../../../erl-third-party/sics/ubf__HEAD/priv/java/classes
